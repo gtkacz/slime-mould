@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from src.enums.directions import Direction
-from src.model.cell import Cell
+from src.models.cell import Cell
 
 
 @dataclass
