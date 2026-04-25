@@ -106,7 +106,7 @@ def h_warnsdorff(
 
 
 @nb.njit(cache=True)  # type: ignore[misc]
-def h_articulation(  # noqa: PLR0912
+def h_articulation(
     walker_id: int,
     cell_next: int,
     visited: np.ndarray,  # type: ignore[type-arg]
@@ -132,17 +132,19 @@ def h_articulation(  # noqa: PLR0912
         _bit_clear(visited, walker_id, cell_next)
         return NEG_INF
 
-    reached = 0
-    sp = 0
-    work_stack[sp] = seed
-    sp += 1
+    # BFS over the free subgraph using a queue laid out as work_stack[0:tail].
+    # We need an explicit list of every cell we mark so cleanup can clear
+    # exactly those cells; a flood-fill cleanup would spill into the walker's
+    # pre-existing visited path through cell_next.
+    head = 0
+    tail = 0
+    work_stack[tail] = seed
+    tail += 1
     _bit_set(visited, walker_id, seed)
 
-    expected = L - path_len_after
-    while sp > 0:
-        sp -= 1
-        cur = work_stack[sp]
-        reached += 1
+    while head < tail:
+        cur = int(work_stack[head])
+        head += 1
         for d in range(4):
             nb_cell = adjacency[cur, d]
             if nb_cell < 0:
@@ -150,27 +152,17 @@ def h_articulation(  # noqa: PLR0912
             if _bit_test(visited, walker_id, nb_cell):
                 continue
             _bit_set(visited, walker_id, nb_cell)
-            work_stack[sp] = nb_cell
-            sp += 1
+            work_stack[tail] = nb_cell
+            tail += 1
 
-    sp = 0
-    work_stack[sp] = seed
-    sp += 1
-    while sp > 0:
-        sp -= 1
-        cur = work_stack[sp]
-        _bit_clear(visited, walker_id, cur)
-        for d in range(4):
-            nb_cell = adjacency[cur, d]
-            if nb_cell < 0:
-                continue
-            if _bit_test(visited, walker_id, nb_cell):
-                _bit_clear(visited, walker_id, nb_cell)
-                work_stack[sp] = nb_cell
-                sp += 1
+    reached = tail
+
+    for i in range(tail):
+        _bit_clear(visited, walker_id, int(work_stack[i]))
 
     _bit_clear(visited, walker_id, cell_next)
 
+    expected = L - path_len_after
     if reached == expected:
         return 0.0
     return NEG_INF

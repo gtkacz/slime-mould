@@ -96,8 +96,10 @@ def solve(  # noqa: PLR0915
         while path_len < L and not dead:
             cur = int(path[path_len - 1])
             legal: list[int] = []
-            for nb_idx in range(int(state.adjacency_count[cur])):
+            for nb_idx in range(int(state.adjacency.shape[1])):
                 nb = int(state.adjacency[cur, nb_idx])
+                if nb < 0:
+                    continue
                 if visited[nb]:
                     continue
                 w_of = int(state.waypoint_of[nb])

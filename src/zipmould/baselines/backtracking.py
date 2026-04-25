@@ -42,9 +42,11 @@ def _articulation_ok(
     expected_remaining: int,
 ) -> bool:
     """BFS over unvisited cells from any unvisited neighbour of cur."""
+    del adjacency_count
     n = visited.shape[0]
+    n_slots = int(adjacency.shape[1])
     start = -1
-    for i in range(int(adjacency_count[cur])):
+    for i in range(n_slots):
         nb = int(adjacency[cur, i])
         if nb < 0:
             continue
@@ -54,13 +56,14 @@ def _articulation_ok(
     if start < 0:
         return expected_remaining == 0
     seen = np.zeros(n, dtype=np.bool_)
+    seen[cur] = True
     seen[start] = True
     stack: list[int] = [start]
     reached = 0
     while stack:
         c = stack.pop()
         reached += 1
-        for i in range(int(adjacency_count[c])):
+        for i in range(n_slots):
             nb = int(adjacency[c, i])
             if nb < 0:
                 continue
@@ -136,6 +139,7 @@ def solve(  # noqa: PLR0912, PLR0915
     stack_seg: list[int] = [1]
     stack_iter: list[int] = [0]
 
+    n_slots = int(adjacency.shape[1])
     while stack_cur:
         if time.perf_counter() > deadline:
             break
@@ -150,7 +154,7 @@ def solve(  # noqa: PLR0912, PLR0915
         if depth == L and seg == K:
             solved = True
             break
-        if nb_i >= int(adjacency_count[cur]):
+        if nb_i >= n_slots:
             visited[cur] = False
             if int(parity[cur]) == 0:
                 f0_remaining += 1
