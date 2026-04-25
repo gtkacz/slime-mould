@@ -1,0 +1,26 @@
+# Stage-4 manifest: held-out test evaluation.
+#
+# Per spec §5, runs the Stage-2-tuned winner against three baselines
+# on the test split. One McNemar test, no peeking at test data
+# during tuning.
+
+stage = "stage4"
+split = "test"
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+trace_seeds = [0]
+
+[[conditions]]
+name = "tuned-winner"
+config = "configs/tuned/zipmould-uni-positive.toml"
+
+[[conditions]]
+name = "heuristic-only"
+config = "configs/ablations/heuristic-only.toml"
+
+[[conditions]]
+name = "aco-vanilla"
+config = "configs/ablations/aco-vanilla.toml"
+
+[[conditions]]
+name = "backtracking"
+config = "configs/ablations/backtracking.toml"
