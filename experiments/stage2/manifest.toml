@@ -1,0 +1,33 @@
+# Stage-2 manifest: hyperparameter tuning grid.
+#
+# Per spec §3, tunes 4 variants on the train split. Each variant
+# gets an independent Optuna TPE study with `n_trials` trials.
+# Each trial evaluates over `seeds` x train_split runs.
+
+stage = "stage2"
+split = "train"
+seeds = [0, 1, 2, 3, 4]
+n_trials = 50
+n_startup_trials = 10
+sampler_seed = 42
+global_seed = 0
+
+[[variants]]
+name = "zipmould-uni-signed"
+pheromone_mode = "unified"
+tau_signed = true
+
+[[variants]]
+name = "zipmould-uni-positive"
+pheromone_mode = "unified"
+tau_signed = false
+
+[[variants]]
+name = "zipmould-strat-signed"
+pheromone_mode = "stratified"
+tau_signed = true
+
+[[variants]]
+name = "zipmould-strat-positive"
+pheromone_mode = "stratified"
+tau_signed = false
