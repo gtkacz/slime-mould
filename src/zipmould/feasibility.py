@@ -38,10 +38,10 @@ def _adjacent(
     walls: frozenset[Edge],
     blocked: frozenset[Coord],
 ) -> list[Coord]:
-    r, k = c
+    r, col = c
     out: list[Coord] = []
     for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-        nr, nc = r + dr, k + dc
+        nr, nc = r + dr, col + dc
         if not (0 <= nr < n and 0 <= nc < n):
             continue
         nb: Coord = (nr, nc)
@@ -58,7 +58,7 @@ def precheck(puzzle: Puzzle) -> FeasibilityReport:
     free = puzzle.free_cells()
 
     for w in puzzle.waypoints:
-        if w in puzzle.blocked or w not in free:
+        if w not in free:
             return FeasibilityReport(False, "waypoint_blocked", 0, 0, 0)
 
     f0 = sum(1 for (r, c) in free if (r + c) % 2 == 0)
@@ -86,11 +86,18 @@ def precheck(puzzle: Puzzle) -> FeasibilityReport:
     if abs(f0 - f1) > 1:
         return FeasibilityReport(False, "parity_imbalance", f0, f1, reach_count)
 
+    w1 = puzzle.waypoints[0]
+    wk = puzzle.waypoints[-1]
+    w1_parity = (w1[0] + w1[1]) % 2
+    wk_parity = (wk[0] + wk[1]) % 2
+
     if f0 != f1:
         larger_parity = 0 if f0 > f1 else 1
-        w1 = puzzle.waypoints[0]
-        wk = puzzle.waypoints[-1]
-        if (w1[0] + w1[1]) % 2 != larger_parity or (wk[0] + wk[1]) % 2 != larger_parity:
-            return FeasibilityReport(False, "endpoint_parity_mismatch", f0, f1, reach_count)
+        endpoint_mismatch = w1_parity != larger_parity or wk_parity != larger_parity
+    else:
+        endpoint_mismatch = w1_parity == wk_parity
+
+    if endpoint_mismatch:
+        return FeasibilityReport(False, "endpoint_parity_mismatch", f0, f1, reach_count)
 
     return FeasibilityReport(True, None, f0, f1, reach_count)
