@@ -210,3 +210,11 @@ __marimo__/
 experiments/stage1/out/
 experiments/stage1/out_smoke/
 experiments/stage1/manifest_smoke.toml
+
+# Stage-2/4 large or local-only artifacts
+experiments/stage2/out/study_*.db
+experiments/stage2/out/study_*.db-journal
+experiments/stage2/out/aggregate.parquet
+experiments/stage4/out/results.parquet
+experiments/stage4/out/aggregate.parquet
+experiments/stage4/out/traces/

@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import tomllib
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import optuna  # pyright: ignore[reportMissingTypeStubs]
 import polars as pl
@@ -30,7 +30,8 @@ def _median_iters_solved(parquet_path: Path, condition: str) -> float | None:
     sub = df.filter((pl.col("condition") == condition) & pl.col("solved"))
     if sub.is_empty():
         return None
-    return float(sub["iters"].median())
+    median = sub["iters"].cast(pl.Float64).median()
+    return cast("float | None", median)
 
 
 @app.command()
@@ -67,7 +68,10 @@ def main(
                 storage=storage,
             )
             n_trials = len(study.trials)
-            best_value = float(study.best_value) if study.best_trial is not None else None
+            try:
+                best_value = float(study.best_value)
+            except ValueError:
+                best_value = None
 
         rankings.append(
             {
