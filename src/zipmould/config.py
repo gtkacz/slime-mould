@@ -103,9 +103,9 @@ class ExperimentManifest(BaseModel):
     stage: str
     split: Literal["train", "dev", "test"]
     seeds: tuple[int, ...]
-    global_seed: int
+    global_seed: int = Field(ge=0)
     conditions: tuple[ConditionEntry, ...]
-    trace_seed: int = 0
+    trace_seed: int = Field(default=0, ge=0)
     output_dir: str
 
     @classmethod
