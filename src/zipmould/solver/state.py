@@ -61,6 +61,7 @@ class KernelState(NamedTuple):
     manhattan_table: np.ndarray  # type: ignore[type-arg]
     parity_table: np.ndarray  # type: ignore[type-arg]
     adjacency: np.ndarray  # type: ignore[type-arg]
+    adjacency_count: np.ndarray  # type: ignore[type-arg]
     edge_of: np.ndarray  # type: ignore[type-arg]
     edge_endpoints: np.ndarray  # type: ignore[type-arg]
     waypoint_cells: np.ndarray  # type: ignore[type-arg]
@@ -138,6 +139,13 @@ def _build_parity(n: int) -> np.ndarray:  # type: ignore[type-arg]
 
 
 def pack(puzzle: Puzzle, config: SolverConfig) -> KernelState:
+    waypoint_of_max = int(np.iinfo(np.int8).max)
+    if waypoint_of_max < puzzle.K:
+        msg = (
+            f"waypoint_of dtype int8 cannot represent K={puzzle.K} "
+            f"(max {waypoint_of_max})"
+        )
+        raise ValueError(msg)
     n = puzzle.N
     n2 = n * n
     K = puzzle.K  # noqa: N806
@@ -147,6 +155,7 @@ def pack(puzzle: Puzzle, config: SolverConfig) -> KernelState:
         blocked_mask[r * n + c] = True
 
     adjacency, edge_of, edge_endpoints, n_edges = _build_adjacency(puzzle)
+    adjacency_count = (adjacency >= 0).sum(axis=1).astype(np.int16)
 
     waypoint_cells = np.array(
         [r * n + c for (r, c) in puzzle.waypoints], dtype=np.int16
@@ -221,6 +230,7 @@ def pack(puzzle: Puzzle, config: SolverConfig) -> KernelState:
         manhattan_table=manhattan_table,
         parity_table=parity_table,
         adjacency=adjacency,
+        adjacency_count=adjacency_count,
         edge_of=edge_of,
         edge_endpoints=edge_endpoints,
         waypoint_cells=waypoint_cells,
