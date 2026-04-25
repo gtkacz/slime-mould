@@ -120,12 +120,12 @@ def efficiency_compare(
     base = (
         df.filter((pl.col("condition") == baseline) & pl.col("solved"))
         .select(["puzzle_id", "seed", "iters", "wall_ms"])
-        .rename({"iters": "iters_base", "wall_ms": "wall_base"})
+        .rename({"iters": "iters_base", "wall_ms": "wall_ms_base"})
     )
     cand = (
         df.filter((pl.col("condition") == candidate) & pl.col("solved"))
         .select(["puzzle_id", "seed", "iters", "wall_ms"])
-        .rename({"iters": "iters_cand", "wall_ms": "wall_cand"})
+        .rename({"iters": "iters_cand", "wall_ms": "wall_ms_cand"})
     )
     joined = base.join(cand, on=["puzzle_id", "seed"], how="inner")
     if joined.is_empty():
@@ -135,7 +135,7 @@ def efficiency_compare(
             "wall_ms_diff_quartiles": None,
         }
     diff_iters = (joined["iters_cand"].to_numpy() - joined["iters_base"].to_numpy()).astype(np.float64)
-    diff_wall = (joined["wall_cand"].to_numpy() - joined["wall_base"].to_numpy()).astype(np.float64)
+    diff_wall = (joined["wall_ms_cand"].to_numpy() - joined["wall_ms_base"].to_numpy()).astype(np.float64)
     return {
         "n_pairs": int(joined.height),
         "iters_diff_quartiles": [float(np.quantile(diff_iters, q)) for q in (0.25, 0.5, 0.75)],
