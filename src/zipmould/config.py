@@ -55,8 +55,8 @@ class SolverConfig(BaseModel):
     @field_validator("beta1")
     @classmethod
     def _check_beta1(cls, v: float | str) -> float | str:
-        if isinstance(v, str) and v != "N_squared":
-            msg = f"beta1 string sentinel must be 'N_squared', got {v!r}"
+        if isinstance(v, str) and v != _BETA1_DEFAULT:
+            msg = f"beta1 string sentinel must be {_BETA1_DEFAULT!r}, got {v!r}"
             raise ValueError(msg)
         if isinstance(v, int | float) and v < 0:
             msg = "beta1 must be non-negative"
@@ -66,8 +66,8 @@ class SolverConfig(BaseModel):
     @field_validator("beta3")
     @classmethod
     def _check_beta3(cls, v: float | str) -> float | str:
-        if isinstance(v, str) and v != "10_N_squared":
-            msg = f"beta3 string sentinel must be '10_N_squared', got {v!r}"
+        if isinstance(v, str) and v != _BETA3_DEFAULT:
+            msg = f"beta3 string sentinel must be {_BETA3_DEFAULT!r}, got {v!r}"
             raise ValueError(msg)
         if isinstance(v, int | float) and v < 0:
             msg = "beta3 must be non-negative"
