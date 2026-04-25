@@ -105,3 +105,39 @@ def asymmetric_puzzles(
         "baseline_only": base_only,
         "both_fail": both_fail,
     }
+
+
+def efficiency_compare(
+    df: pl.DataFrame,
+    baseline: str,
+    candidate: str,
+) -> dict[str, Any]:
+    """Paired iters/wall-ms diff on (puzzle, seed) pairs both conditions solved.
+
+    Returns N pairs and quartiles of (candidate - baseline) for both metrics.
+    A negative median means the candidate is faster on the intersected set.
+    """
+    base = (
+        df.filter((pl.col("condition") == baseline) & pl.col("solved"))
+        .select(["puzzle_id", "seed", "iters", "wall_ms"])
+        .rename({"iters": "iters_base", "wall_ms": "wall_base"})
+    )
+    cand = (
+        df.filter((pl.col("condition") == candidate) & pl.col("solved"))
+        .select(["puzzle_id", "seed", "iters", "wall_ms"])
+        .rename({"iters": "iters_cand", "wall_ms": "wall_cand"})
+    )
+    joined = base.join(cand, on=["puzzle_id", "seed"], how="inner")
+    if joined.is_empty():
+        return {
+            "n_pairs": 0,
+            "iters_diff_quartiles": None,
+            "wall_ms_diff_quartiles": None,
+        }
+    diff_iters = (joined["iters_cand"].to_numpy() - joined["iters_base"].to_numpy()).astype(np.float64)
+    diff_wall = (joined["wall_cand"].to_numpy() - joined["wall_base"].to_numpy()).astype(np.float64)
+    return {
+        "n_pairs": int(joined.height),
+        "iters_diff_quartiles": [float(np.quantile(diff_iters, q)) for q in (0.25, 0.5, 0.75)],
+        "wall_ms_diff_quartiles": [float(np.quantile(diff_wall, q)) for q in (0.25, 0.5, 0.75)],
+    }
