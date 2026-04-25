@@ -24,7 +24,7 @@ zipmould = "zipmould.cli:app"
 dev = [
     "ruff>=0.8,<0.9",
     "ty>=0.0.32",
-    "pyright>=1.1.390",
+    "pyright>=1.1.390,<2",
     "bandit>=1.8,<2",
     "py-spy>=0.4,<1",
     "scalene>=1.5,<2",
@@ -45,7 +45,7 @@ target-version = "py313"
 src = ["src", "benchmark", "experiments"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "RET", "SIM", "PL", "RUF", "PERF", "ANN", "S"]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "RET", "SIM", "PL", "RUF", "PERF", "ANN", "S", "T"]
 ignore = [
     "PLR0913",
     "ANN401",

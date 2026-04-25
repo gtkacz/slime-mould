@@ -655,7 +655,7 @@ dev = [
     { name = "bandit", specifier = ">=1.8,<2" },
     { name = "hypothesis", specifier = ">=6.115,<7" },
     { name = "py-spy", specifier = ">=0.4,<1" },
-    { name = "pyright", specifier = ">=1.1.390" },
+    { name = "pyright", specifier = ">=1.1.390,<2" },
     { name = "pytest", specifier = ">=8.3,<9" },
     { name = "ruff", specifier = ">=0.8,<0.9" },
     { name = "scalene", specifier = ">=1.5,<2" },
