@@ -158,3 +158,104 @@ def _walker_step(  # noqa: PLR0912, PLR0915  # pyright: ignore[reportUnusedFunct
         and next_cell == int(waypoint_cells[K - 1])
     ):
         status[walker_id] = 2
+
+
+@nb.njit(cache=True)  # type: ignore[misc]
+def _init_walker(  # pyright: ignore[reportUnusedFunction]
+    walker_id: int,
+    pos: np.ndarray,  # type: ignore[type-arg]
+    visited: np.ndarray,  # type: ignore[type-arg]
+    path: np.ndarray,  # type: ignore[type-arg]
+    path_len: np.ndarray,  # type: ignore[type-arg]
+    segment: np.ndarray,  # type: ignore[type-arg]
+    status: np.ndarray,  # type: ignore[type-arg]
+    f0_remaining: np.ndarray,  # type: ignore[type-arg]
+    f1_remaining: np.ndarray,  # type: ignore[type-arg]
+    waypoint_cells: np.ndarray,  # type: ignore[type-arg]
+    parity_table: np.ndarray,  # type: ignore[type-arg]
+    f0_total: int,
+    f1_total: int,
+) -> None:
+    visited[walker_id, :] = np.uint64(0)
+    path_len[walker_id] = 0
+    status[walker_id] = 0
+
+    start = int(waypoint_cells[0])
+    pos[walker_id] = start
+    path[walker_id, 0] = start
+    path_len[walker_id] = 1
+    _bit_set(visited, walker_id, start)
+    segment[walker_id] = 1
+
+    if parity_table[start] == 0:
+        f0_remaining[walker_id] = f0_total - 1
+        f1_remaining[walker_id] = f1_total
+    else:
+        f0_remaining[walker_id] = f0_total
+        f1_remaining[walker_id] = f1_total - 1
+
+
+@nb.njit(cache=True)  # type: ignore[misc]
+def _walker_run(  # pyright: ignore[reportUnusedFunction]
+    walker_id: int,
+    pos: np.ndarray,  # type: ignore[type-arg]
+    visited: np.ndarray,  # type: ignore[type-arg]
+    path: np.ndarray,  # type: ignore[type-arg]
+    path_len: np.ndarray,  # type: ignore[type-arg]
+    segment: np.ndarray,  # type: ignore[type-arg]
+    status: np.ndarray,  # type: ignore[type-arg]
+    f0_remaining: np.ndarray,  # type: ignore[type-arg]
+    f1_remaining: np.ndarray,  # type: ignore[type-arg]
+    adjacency: np.ndarray,  # type: ignore[type-arg]
+    edge_of: np.ndarray,  # type: ignore[type-arg]
+    waypoint_of: np.ndarray,  # type: ignore[type-arg]
+    parity_table: np.ndarray,  # type: ignore[type-arg]
+    manhattan_table: np.ndarray,  # type: ignore[type-arg]
+    waypoint_cells: np.ndarray,  # type: ignore[type-arg]
+    tau: np.ndarray,  # type: ignore[type-arg]
+    pheromone_mode: int,
+    n_stripes: int,
+    K: int,  # noqa: N803
+    L: int,  # noqa: N803
+    N2: int,  # noqa: N803
+    alpha: float,
+    beta_log: float,
+    gamma_man: float,
+    gamma_warns: float,
+    gamma_art: float,
+    gamma_par: float,
+    work_stack: np.ndarray,  # type: ignore[type-arg]
+) -> None:
+    while status[walker_id] == 0 and int(path_len[walker_id]) < L:
+        _walker_step(
+            walker_id,
+            pos,
+            visited,
+            path,
+            path_len,
+            segment,
+            status,
+            f0_remaining,
+            f1_remaining,
+            adjacency,
+            edge_of,
+            waypoint_of,
+            parity_table,
+            manhattan_table,
+            waypoint_cells,
+            tau,
+            pheromone_mode,
+            n_stripes,
+            K,
+            L,
+            N2,
+            alpha,
+            beta_log,
+            gamma_man,
+            gamma_warns,
+            gamma_art,
+            gamma_par,
+            work_stack,
+        )
+    if status[walker_id] == 0 and int(path_len[walker_id]) >= L:
+        status[walker_id] = 1
