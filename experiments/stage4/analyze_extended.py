@@ -8,21 +8,10 @@ Output: ``experiments/stage4/out/extended_report.json``.
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 import numpy as np
 import polars as pl
-import typer
-from loguru import logger
-
-from zipmould.logging_config import configure_logging
-from zipmould.metrics import aggregate, load_results
-
-from experiments.stage4.analyze import BASELINES, CANDIDATE, _solve_counts
-
-app = typer.Typer(add_completion=False, no_args_is_help=False)
 
 
 def paired_bootstrap_diff(

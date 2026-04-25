@@ -29,6 +29,11 @@ The user's CLAUDE.md (`Only ever plan or write tests, unit or otherwise, if expl
 **Files:**
 - Create: `experiments/stage4/analyze_extended.py`
 
+> **Imports policy:** Every commit must pass `ruff check` and `pyright` (strict).
+> Each task imports ONLY what its own function body uses; later tasks add their
+> own imports when they introduce new dependencies. Do not forward-load imports
+> for downstream tasks.
+
 - [ ] **Step 1: Write the skeleton with the bootstrap helper**
 
 Write `/home/gtkacz/Codes/slime-mould/experiments/stage4/analyze_extended.py`:
@@ -44,21 +49,10 @@ Output: ``experiments/stage4/out/extended_report.json``.
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 import numpy as np
 import polars as pl
-import typer
-from loguru import logger
-
-from zipmould.logging_config import configure_logging
-from zipmould.metrics import aggregate, load_results
-
-from experiments.stage4.analyze import BASELINES, CANDIDATE, _solve_counts
-
-app = typer.Typer(add_completion=False, no_args_is_help=False)
 
 
 def paired_bootstrap_diff(
@@ -177,9 +171,35 @@ git commit -m "feat(stage4): seed-level reliability summary per condition"
 ### Task 3: Asymmetric-puzzle table
 
 **Files:**
-- Modify: `experiments/stage4/analyze_extended.py` (append `asymmetric_puzzles`)
+- Modify: `experiments/stage4/analyze_extended.py` (extend imports, append `asymmetric_puzzles`)
 
-- [ ] **Step 1: Append the function**
+- [ ] **Step 1: Add the `aggregate` import**
+
+In `experiments/stage4/analyze_extended.py`, replace the imports block
+
+```python
+from __future__ import annotations
+
+from typing import Any
+
+import numpy as np
+import polars as pl
+```
+
+with
+
+```python
+from __future__ import annotations
+
+from typing import Any
+
+import numpy as np
+import polars as pl
+
+from zipmould.metrics import aggregate
+```
+
+- [ ] **Step 2: Append the function**
 
 Append to `/home/gtkacz/Codes/slime-mould/experiments/stage4/analyze_extended.py`:
 
@@ -216,7 +236,7 @@ def asymmetric_puzzles(
     }
 ```
 
-- [ ] **Step 2: Smoke-check on the real parquet**
+- [ ] **Step 3: Smoke-check on the real parquet**
 
 Run:
 
@@ -232,7 +252,7 @@ print(json.dumps(asymmetric_puzzles(df, baseline='backtracking', candidate='tune
 
 Expected: `candidate_only` is a length-1 list (the one puzzle backtracking misses), `baseline_only` is `[]`, `both_fail` is `[]`.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add experiments/stage4/analyze_extended.py
@@ -315,10 +335,47 @@ git commit -m "feat(stage4): paired efficiency comparison on intersected solved 
 ### Task 5: Wire main + run + emit extended_report.json
 
 **Files:**
-- Modify: `experiments/stage4/analyze_extended.py` (append `main`)
+- Modify: `experiments/stage4/analyze_extended.py` (extend imports, declare Typer app, append `main`)
 - Generate: `experiments/stage4/out/extended_report.json`
 
-- [ ] **Step 1: Append the CLI entrypoint**
+- [ ] **Step 1: Extend the imports block and declare the Typer app**
+
+In `experiments/stage4/analyze_extended.py`, replace the imports block
+
+```python
+from __future__ import annotations
+
+from typing import Any
+
+import numpy as np
+import polars as pl
+
+from zipmould.metrics import aggregate
+```
+
+with
+
+```python
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import polars as pl
+import typer
+from loguru import logger
+
+from zipmould.logging_config import configure_logging
+from zipmould.metrics import aggregate, load_results
+
+from experiments.stage4.analyze import BASELINES, CANDIDATE, _solve_counts
+
+app = typer.Typer(add_completion=False, no_args_is_help=False)
+```
+
+- [ ] **Step 2: Append the CLI entrypoint**
 
 Append to `/home/gtkacz/Codes/slime-mould/experiments/stage4/analyze_extended.py`:
 
@@ -384,7 +441,7 @@ if __name__ == "__main__":
     app()
 ```
 
-- [ ] **Step 2: Run the analysis**
+- [ ] **Step 3: Run the analysis**
 
 Run:
 
@@ -394,7 +451,7 @@ uv run python -m experiments.stage4.analyze_extended
 
 Expected: Loguru emits a single info line of the form `Stage-4 extended: bootstrap CI [<lo>, <hi>] on diff vs backtracking (observed=1)`. Exit code 0. File `experiments/stage4/out/extended_report.json` is created.
 
-- [ ] **Step 3: Eyeball the output**
+- [ ] **Step 4: Eyeball the output**
 
 Run:
 
@@ -417,7 +474,7 @@ Expected:
 - `cand-only puzzles` is a length-1 list (the one puzzle backtracking misses).
 - `eff n_pairs: 1080`.
 
-- [ ] **Step 4: Commit module + generated report**
+- [ ] **Step 5: Commit module + generated report**
 
 ```bash
 git add experiments/stage4/analyze_extended.py experiments/stage4/out/extended_report.json
