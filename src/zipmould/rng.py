@@ -21,17 +21,13 @@ def _digest(global_seed: int, run_seed: int, puzzle_id: str, config_hash: str) -
     return h.digest()
 
 
-def derive_kernel_seed(
-    global_seed: int, run_seed: int, puzzle_id: str, config_hash: str
-) -> int:
+def derive_kernel_seed(global_seed: int, run_seed: int, puzzle_id: str, config_hash: str) -> int:
     """Return a deterministic 32-bit unsigned integer suitable for `np.random.seed` inside `@njit`."""
     digest = _digest(global_seed, run_seed, puzzle_id, config_hash)
     return int.from_bytes(digest[:4], "little") & 0xFFFFFFFF
 
 
-def make_rng(
-    global_seed: int, run_seed: int, puzzle_id: str, config_hash: str
-) -> np.random.Generator:
+def make_rng(global_seed: int, run_seed: int, puzzle_id: str, config_hash: str) -> np.random.Generator:
     """Return a `Generator` for any outer-layer sampling that must share the run identity."""
     digest = _digest(global_seed, run_seed, puzzle_id, config_hash)
     seed_seq = np.random.SeedSequence(int.from_bytes(digest, "little"))

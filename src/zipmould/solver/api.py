@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404
 import sys
 import time
 from collections.abc import Mapping
@@ -67,11 +67,17 @@ def _library_versions() -> dict[str, str]:
 
 def _git_sha_and_dirty() -> tuple[str, bool]:
     try:
-        sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()  # noqa: S603, S607
+        sha = subprocess.check_output(  # noqa: S603  # nosec B603 B607
+            ["git", "rev-parse", "HEAD"],  # noqa: S607
+            text=True,
+        ).strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return ("unknown", False)
     try:
-        diff = subprocess.check_output(["git", "status", "--porcelain"], text=True)  # noqa: S603, S607
+        diff = subprocess.check_output(  # noqa: S603  # nosec B603 B607
+            ["git", "status", "--porcelain"],  # noqa: S607
+            text=True,
+        )
         return (sha, bool(diff.strip()))
     except subprocess.CalledProcessError:
         return (sha, False)
@@ -106,9 +112,7 @@ def _build_trace(
     frame_tau_payload: np.ndarray,  # type: ignore[type-arg]
 ) -> Trace:
     n = puzzle.N
-    mode_str: Literal["unified", "stratified"] = (
-        "stratified" if state.pheromone_mode == 1 else "unified"
-    )
+    mode_str: Literal["unified", "stratified"] = "stratified" if state.pheromone_mode == 1 else "unified"
 
     frames: list[Frame] = []
     for fi in range(n_frames):
@@ -122,10 +126,7 @@ def _build_trace(
 
         best_w = int(frame_best_w[fi])
         path_len = int(state.path_len[best_w])
-        best_path = tuple(
-            (int(state.path[best_w, s]) // n, int(state.path[best_w, s]) % n)
-            for s in range(path_len)
-        )
+        best_path = tuple((int(state.path[best_w, s]) // n, int(state.path[best_w, s]) % n) for s in range(path_len))
         bp = BestPath(path=best_path, fitness=float(frame_best_fitness[fi]))
 
         walkers: list[WalkerSnapshot] = []
@@ -243,22 +244,64 @@ def solve(  # noqa: PLR0915
 
     t0 = time.perf_counter()
     encoded = _kernel_run(
-        state.pos, state.visited, state.path, state.path_len, state.segment, state.status,
-        state.f0_remaining, state.f1_remaining, state.walker_fitness,
-        state.adjacency, state.edge_of, state.waypoint_of, state.parity_table,
-        state.manhattan_table, state.waypoint_cells, state.tau,
-        state.pheromone_mode, state.n_walkers, state.n_stripes, state.K, state.L, state.N2, state.N,
-        state.alpha, state.beta, state.gamma_man, state.gamma_warns, state.gamma_art, state.gamma_par,
-        state.beta1, state.beta2, state.beta3, state.f0_total, state.f1_total, work_stack,
-        config.iter_cap, state.z, state.tau_max, state.tau_clip_min,
+        state.pos,
+        state.visited,
+        state.path,
+        state.path_len,
+        state.segment,
+        state.status,
+        state.f0_remaining,
+        state.f1_remaining,
+        state.walker_fitness,
+        state.adjacency,
+        state.edge_of,
+        state.waypoint_of,
+        state.parity_table,
+        state.manhattan_table,
+        state.waypoint_cells,
+        state.tau,
+        state.pheromone_mode,
+        state.n_walkers,
+        state.n_stripes,
+        state.K,
+        state.L,
+        state.N2,
+        state.N,
+        state.alpha,
+        state.beta,
+        state.gamma_man,
+        state.gamma_warns,
+        state.gamma_art,
+        state.gamma_par,
+        state.beta1,
+        state.beta2,
+        state.beta3,
+        state.f0_total,
+        state.f1_total,
+        work_stack,
+        config.iter_cap,
+        state.z,
+        state.tau_max,
+        state.tau_clip_min,
         1 if freeze_pheromone else 0,
         int(kernel_seed),
-        config.frame_interval, config.visible_walkers, state.tau_delta_epsilon,
-        frame_t, frame_v_b, frame_v_c, frame_best_w, frame_best_fitness,
-        frame_walker_ids, frame_walker_cells, frame_walker_segments,
-        frame_walker_status, frame_walker_fitness,
-        frame_tau_count, frame_tau_payload,
-        tau_prev, tau_scratch,
+        config.frame_interval,
+        config.visible_walkers,
+        state.tau_delta_epsilon,
+        frame_t,
+        frame_v_b,
+        frame_v_c,
+        frame_best_w,
+        frame_best_fitness,
+        frame_walker_ids,
+        frame_walker_cells,
+        frame_walker_segments,
+        frame_walker_status,
+        frame_walker_fitness,
+        frame_tau_count,
+        frame_tau_payload,
+        tau_prev,
+        tau_scratch,
     )
     elapsed = time.perf_counter() - t0
 
@@ -291,12 +334,28 @@ def solve(  # noqa: PLR0915
     trace_obj: Trace | None = None
     if trace:
         trace_obj = _build_trace(
-            puzzle, config, state, seed, n_frames, iters_used, elapsed,
-            solved, solution, best_fitness,
-            frame_t, frame_v_b, frame_v_c, frame_best_w, frame_best_fitness,
-            frame_walker_ids, frame_walker_cells, frame_walker_segments,
-            frame_walker_status, frame_walker_fitness,
-            frame_tau_count, frame_tau_payload,
+            puzzle,
+            config,
+            state,
+            seed,
+            n_frames,
+            iters_used,
+            elapsed,
+            solved,
+            solution,
+            best_fitness,
+            frame_t,
+            frame_v_b,
+            frame_v_c,
+            frame_best_w,
+            frame_best_fitness,
+            frame_walker_ids,
+            frame_walker_cells,
+            frame_walker_segments,
+            frame_walker_status,
+            frame_walker_fitness,
+            frame_tau_count,
+            frame_tau_payload,
         )
 
     return RunResult(

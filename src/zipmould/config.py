@@ -92,9 +92,7 @@ class SolverConfig(BaseModel):
 class ConditionEntry(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
     name: str
-    solver: Literal[
-        "zipmould", "random_walk", "heuristic_only", "aco_vanilla", "backtracking"
-    ]
+    solver: Literal["zipmould", "random_walk", "heuristic_only", "aco_vanilla", "backtracking"]
     config: str
 
 

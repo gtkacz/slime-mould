@@ -84,10 +84,7 @@ def solve(  # noqa: PLR0915
     iters = 0
     solved = False
 
-    while (
-        time.perf_counter() - start_time < float(config.wall_clock_s)
-        and iters < int(config.iter_cap)
-    ):
+    while time.perf_counter() - start_time < float(config.wall_clock_s) and iters < int(config.iter_cap):
         iters += 1
         path = np.full(L, -1, dtype=np.int32)
         visited = np.zeros(n_cells, dtype=np.bool_)
@@ -128,11 +125,7 @@ def solve(  # noqa: PLR0915
 
     elapsed = time.perf_counter() - start_time
 
-    last_cell = (
-        int(best_path[best_len - 1])
-        if (best_path is not None and best_len > 0)
-        else int(waypoint_cells[0])
-    )
+    last_cell = int(best_path[best_len - 1]) if (best_path is not None and best_len > 0) else int(waypoint_cells[0])
     best_fitness = float(
         _fitness(
             int(best_len),

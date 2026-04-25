@@ -87,9 +87,7 @@ def solve(
     """Vanilla ACO baseline using classical evaporate+deposit on a unified tau."""
     del trace, condition, freeze_pheromone
 
-    cfg = config.model_copy(
-        update={"pheromone_mode": "unified", "tau_signed": False}
-    )
+    cfg = config.model_copy(update={"pheromone_mode": "unified", "tau_signed": False})
     cfg_hash = cfg.config_hash()
     versions = _library_versions()
     git_sha, git_dirty = _git_sha_and_dirty()
@@ -117,40 +115,71 @@ def solve(
     best_len = 0
     solved = False
 
-    while (
-        time.perf_counter() - start_time < float(cfg.wall_clock_s)
-        and iters < int(cfg.iter_cap)
-    ):
+    while time.perf_counter() - start_time < float(cfg.wall_clock_s) and iters < int(cfg.iter_cap):
         iters += 1
         for w in range(n_walkers):
             _init_walker(
-                w, state.pos, state.visited, state.path, state.path_len,
-                state.segment, state.status,
-                state.f0_remaining, state.f1_remaining,
-                state.waypoint_cells, state.parity_table,
-                state.f0_total, state.f1_total,
+                w,
+                state.pos,
+                state.visited,
+                state.path,
+                state.path_len,
+                state.segment,
+                state.status,
+                state.f0_remaining,
+                state.f1_remaining,
+                state.waypoint_cells,
+                state.parity_table,
+                state.f0_total,
+                state.f1_total,
             )
             _walker_run(
-                w, state.pos, state.visited, state.path, state.path_len,
-                state.segment, state.status,
-                state.f0_remaining, state.f1_remaining,
-                state.adjacency, state.edge_of, state.waypoint_of,
-                state.parity_table, state.manhattan_table, state.waypoint_cells,
+                w,
+                state.pos,
+                state.visited,
+                state.path,
+                state.path_len,
+                state.segment,
+                state.status,
+                state.f0_remaining,
+                state.f1_remaining,
+                state.adjacency,
+                state.edge_of,
+                state.waypoint_of,
+                state.parity_table,
+                state.manhattan_table,
+                state.waypoint_cells,
                 state.tau,
-                state.pheromone_mode, state.n_stripes,
-                state.K, state.L, state.N2,
-                state.alpha, state.beta, state.gamma_man, state.gamma_warns,
-                state.gamma_art, state.gamma_par,
+                state.pheromone_mode,
+                state.n_stripes,
+                state.K,
+                state.L,
+                state.N2,
+                state.alpha,
+                state.beta,
+                state.gamma_man,
+                state.gamma_warns,
+                state.gamma_art,
+                state.gamma_par,
                 work_stack,
             )
             plen = int(state.path_len[w])
             seg = int(state.segment[w])
             last_cell = int(state.path[w, plen - 1]) if plen > 0 else int(waypoint_cells[0])
-            f = float(_fitness(
-                plen, seg, last_cell,
-                waypoint_cells, L, K, n,
-                float(state.beta1), float(state.beta2), float(state.beta3),
-            ))
+            f = float(
+                _fitness(
+                    plen,
+                    seg,
+                    last_cell,
+                    waypoint_cells,
+                    L,
+                    K,
+                    n,
+                    float(state.beta1),
+                    float(state.beta2),
+                    float(state.beta3),
+                )
+            )
             state.walker_fitness[w] = f
             if f > best_fitness:
                 best_fitness = f
@@ -165,17 +194,21 @@ def solve(
         if solved:
             break
         _aco_update(
-            state.tau, state.path, state.path_len, state.edge_of,
-            state.walker_fitness, _RHO, _Q, _TAU_FLOOR, n_walkers,
+            state.tau,
+            state.path,
+            state.path_len,
+            state.edge_of,
+            state.walker_fitness,
+            _RHO,
+            _Q,
+            _TAU_FLOOR,
+            n_walkers,
             state.adjacency,
         )
 
     elapsed = time.perf_counter() - start_time
 
-    max_f = (
-        float(L) + float(state.beta1) * float(K)
-        + float(state.beta2) + float(state.beta3)
-    )
+    max_f = float(L) + float(state.beta1) * float(K) + float(state.beta2) + float(state.beta3)
     best_normalised = best_fitness / max_f if max_f > 0 else 0.0
 
     solution: tuple[Coord, ...] | None = None

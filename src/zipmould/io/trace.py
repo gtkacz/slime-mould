@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal, cast
 
 import cbor2
 
@@ -133,20 +133,14 @@ def _trace_to_dict(trace: Trace) -> dict[str, object]:
             "K": trace.header.K,
             "L": trace.header.L,
             "waypoints": [[r, c] for (r, c) in trace.header.waypoints],
-            "walls": [
-                [[a[0], a[1]], [b[0], b[1]]] for (a, b) in trace.header.walls
-            ],
+            "walls": [[[a[0], a[1]], [b[0], b[1]]] for (a, b) in trace.header.walls],
             "blocked": [[r, c] for (r, c) in trace.header.blocked],
         },
         "frames": [_frame_to_dict(f) for f in trace.frames],
         "footer": {
             "solved": trace.footer.solved,
             "infeasible": trace.footer.infeasible,
-            "solution": (
-                [[r, c] for (r, c) in trace.footer.solution]
-                if trace.footer.solution is not None
-                else None
-            ),
+            "solution": ([[r, c] for (r, c) in trace.footer.solution] if trace.footer.solution is not None else None),
             "iterations_used": trace.footer.iterations_used,
             "wall_clock_s": trace.footer.wall_clock_s,
             "best_fitness": trace.footer.best_fitness,
@@ -154,36 +148,35 @@ def _trace_to_dict(trace: Trace) -> dict[str, object]:
     }
 
 
-def _walker_from_dict(d: dict[str, object]) -> WalkerSnapshot:
+def _walker_from_dict(raw: object) -> WalkerSnapshot:
+    d = cast("dict[str, Any]", raw)
     cell = d["cell"]
     return WalkerSnapshot(
-        id=int(d["id"]),  # type: ignore[arg-type]
-        cell=(int(cell[0]), int(cell[1])),  # type: ignore[index]
-        segment=int(d["segment"]),  # type: ignore[arg-type]
-        status=d["status"],  # type: ignore[assignment]
-        fitness=float(d["fitness"]),  # type: ignore[arg-type]
+        id=int(d["id"]),
+        cell=(int(cell[0]), int(cell[1])),
+        segment=int(d["segment"]),
+        status=cast("Literal['alive', 'dead-end', 'complete']", d["status"]),
+        fitness=float(d["fitness"]),
     )
 
 
-def _frame_from_dict(d: dict[str, object]) -> Frame:
-    td = d["tau_delta"]
-    best = d["best"]
+def _frame_from_dict(raw: object) -> Frame:
+    d = cast("dict[str, Any]", raw)
+    td = cast("dict[str, Any]", d["tau_delta"])
+    best = cast("dict[str, Any]", d["best"])
     return Frame(
-        t=int(d["t"]),  # type: ignore[arg-type]
-        v_b=float(d["v_b"]),  # type: ignore[arg-type]
-        v_c=float(d["v_c"]),  # type: ignore[arg-type]
+        t=int(d["t"]),
+        v_b=float(d["v_b"]),
+        v_c=float(d["v_c"]),
         tau_delta=TauDelta(
-            mode=td["mode"],  # type: ignore[index, assignment]
-            edges=tuple(
-                (int(e[0]), int(e[1]), float(e[2]))  # pyright: ignore[reportUnknownArgumentType]
-                for e in td["edges"]  # type: ignore[index, union-attr]
-            ),
+            mode=cast("Literal['unified', 'stratified']", td["mode"]),
+            edges=tuple((int(e[0]), int(e[1]), float(e[2])) for e in td["edges"]),
         ),
         best=BestPath(
-            path=tuple((int(r), int(c)) for (r, c) in best["path"]),  # type: ignore[index, union-attr]
-            fitness=float(best["fitness"]),  # type: ignore[index, arg-type]
+            path=tuple((int(r), int(c)) for (r, c) in best["path"]),
+            fitness=float(best["fitness"]),
         ),
-        walkers=tuple(_walker_from_dict(w) for w in d["walkers"]),  # type: ignore[arg-type]
+        walkers=tuple(_walker_from_dict(w) for w in d["walkers"]),
     )
 
 
@@ -195,34 +188,27 @@ def write_cbor(trace: Trace, path: Path) -> None:
 
 def read_cbor(path: Path) -> Trace:
     with path.open("rb") as f:
-        raw = cbor2.load(f)
-    h = raw["header"]
-    ft = raw["footer"]
+        raw = cast("dict[str, Any]", cbor2.load(f))
+    h = cast("dict[str, Any]", raw["header"])
+    ft = cast("dict[str, Any]", raw["footer"])
     return Trace(
         version=int(raw["version"]),
         puzzle_id=str(raw["puzzle_id"]),
-        config=dict(raw["config"]),
+        config=dict(cast("dict[str, Any]", raw["config"])),
         seed=int(raw["seed"]),
         header=TraceHeader(
             N=int(h["N"]),
             K=int(h["K"]),
             L=int(h["L"]),
             waypoints=tuple((int(r), int(c)) for (r, c) in h["waypoints"]),
-            walls=tuple(
-                ((int(a[0]), int(a[1])), (int(b[0]), int(b[1])))
-                for (a, b) in h["walls"]
-            ),
+            walls=tuple(((int(a[0]), int(a[1])), (int(b[0]), int(b[1]))) for (a, b) in h["walls"]),
             blocked=tuple((int(r), int(c)) for (r, c) in h["blocked"]),
         ),
         frames=tuple(_frame_from_dict(f) for f in raw["frames"]),
         footer=TraceFooter(
             solved=bool(ft["solved"]),
             infeasible=bool(ft["infeasible"]),
-            solution=(
-                tuple((int(r), int(c)) for (r, c) in ft["solution"])
-                if ft["solution"] is not None
-                else None
-            ),
+            solution=(tuple((int(r), int(c)) for (r, c) in ft["solution"]) if ft["solution"] is not None else None),
             iterations_used=int(ft["iterations_used"]),
             wall_clock_s=float(ft["wall_clock_s"]),
             best_fitness=float(ft["best_fitness"]),

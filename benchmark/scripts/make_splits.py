@@ -80,7 +80,7 @@ def make_splits(puzzles_path: Path, out_path: Path) -> None:
     logger.info("Loaded {} puzzles from {}", len(puzzles), puzzles_path)
 
     strata = _stratify(puzzles)
-    rng = random.Random(SPLIT_SEED)
+    rng = random.Random(SPLIT_SEED)  # noqa: S311 - deterministic split generation, not cryptographic
 
     train: list[str] = []
     dev: list[str] = []

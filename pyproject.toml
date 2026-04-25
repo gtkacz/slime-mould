@@ -61,7 +61,7 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
 
-[tool.ty]
+[tool.ty.environment]
 python-version = "3.13"
 
 [tool.pyright]

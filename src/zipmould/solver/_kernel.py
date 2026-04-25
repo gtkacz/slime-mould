@@ -152,11 +152,7 @@ def _walker_step(  # noqa: PLR0912, PLR0915  # pyright: ignore[reportUnusedFunct
     if wlabel >= 1:
         segment[walker_id] = wlabel
 
-    if (
-        path_len[walker_id] == L
-        and segment[walker_id] == K
-        and next_cell == int(waypoint_cells[K - 1])
-    ):
+    if path_len[walker_id] == L and segment[walker_id] == K and next_cell == int(waypoint_cells[K - 1]):
         status[walker_id] = 2
 
 
@@ -423,16 +419,48 @@ def _run_iteration(  # pyright: ignore[reportUnusedFunction]
 ) -> int:
     for w in range(n_walkers):
         _init_walker(
-            w, pos, visited, path, path_len, segment, status,
-            f0_remaining, f1_remaining, waypoint_cells, parity_table,
-            f0_total, f1_total,
+            w,
+            pos,
+            visited,
+            path,
+            path_len,
+            segment,
+            status,
+            f0_remaining,
+            f1_remaining,
+            waypoint_cells,
+            parity_table,
+            f0_total,
+            f1_total,
         )
         _walker_run(
-            w, pos, visited, path, path_len, segment, status,
-            f0_remaining, f1_remaining, adjacency, edge_of, waypoint_of,
-            parity_table, manhattan_table, waypoint_cells, tau,
-            pheromone_mode, n_stripes, K, L, N2,
-            alpha, beta_log, gamma_man, gamma_warns, gamma_art, gamma_par,
+            w,
+            pos,
+            visited,
+            path,
+            path_len,
+            segment,
+            status,
+            f0_remaining,
+            f1_remaining,
+            adjacency,
+            edge_of,
+            waypoint_of,
+            parity_table,
+            manhattan_table,
+            waypoint_cells,
+            tau,
+            pheromone_mode,
+            n_stripes,
+            K,
+            L,
+            N2,
+            alpha,
+            beta_log,
+            gamma_man,
+            gamma_warns,
+            gamma_art,
+            gamma_par,
             work_stack,
         )
 
@@ -450,8 +478,22 @@ def _run_iteration(  # pyright: ignore[reportUnusedFunction]
 
     if freeze_pheromone == 0:
         _pheromone_update(
-            tau, walker_fitness, path, path_len, edge_of, waypoint_of, adjacency,
-            n_walkers, n_stripes, pheromone_mode, K, t, T, z, tau_max, tau_clip_min,
+            tau,
+            walker_fitness,
+            path,
+            path_len,
+            edge_of,
+            waypoint_of,
+            adjacency,
+            n_walkers,
+            n_stripes,
+            pheromone_mode,
+            K,
+            t,
+            T,
+            z,
+            tau_max,
+            tau_clip_min,
         )
 
     if solved_walker >= 0:
@@ -556,14 +598,47 @@ def _kernel_run(  # noqa: PLR0912  # pyright: ignore[reportUnusedFunction]
 
     for t in range(iter_cap):
         res = _run_iteration(
-            pos, visited, path, path_len, segment, status,
-            f0_remaining, f1_remaining, walker_fitness,
-            adjacency, edge_of, waypoint_of, parity_table,
-            manhattan_table, waypoint_cells, tau,
-            pheromone_mode, n_walkers, n_stripes, K, L, N2, N,
-            alpha, beta_log, gamma_man, gamma_warns, gamma_art, gamma_par,
-            beta1, beta2, beta3, f0_total, f1_total, work_stack,
-            t, iter_cap, z, tau_max, tau_clip_min, freeze_pheromone,
+            pos,
+            visited,
+            path,
+            path_len,
+            segment,
+            status,
+            f0_remaining,
+            f1_remaining,
+            walker_fitness,
+            adjacency,
+            edge_of,
+            waypoint_of,
+            parity_table,
+            manhattan_table,
+            waypoint_cells,
+            tau,
+            pheromone_mode,
+            n_walkers,
+            n_stripes,
+            K,
+            L,
+            N2,
+            N,
+            alpha,
+            beta_log,
+            gamma_man,
+            gamma_warns,
+            gamma_art,
+            gamma_par,
+            beta1,
+            beta2,
+            beta3,
+            f0_total,
+            f1_total,
+            work_stack,
+            t,
+            iter_cap,
+            z,
+            tau_max,
+            tau_clip_min,
+            freeze_pheromone,
         )
 
         if (t % frame_interval) == 0 or res >= 0:
@@ -605,4 +680,3 @@ def _kernel_run(  # noqa: PLR0912  # pyright: ignore[reportUnusedFunction]
             break
 
     return n_frames if solved_iter < 0 else (n_frames | (1 << 30))
-

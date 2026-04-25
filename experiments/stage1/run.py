@@ -181,9 +181,7 @@ def main(
     for cond in conditions:
         cname = str(cond["name"])
         cpath = str(cond["config"])
-        jobs.extend(
-            (cname, cpath, pid, s, s in trace_seeds) for pid in puzzle_ids for s in seeds
-        )
+        jobs.extend((cname, cpath, pid, s, s in trace_seeds) for pid in puzzle_ids for s in seeds)
 
     rows: list[dict[str, Any]] = Parallel(n_jobs=workers, backend="loky", verbose=0)(  # pyright: ignore[reportUnknownVariableType, reportAssignmentType]
         delayed(_run_one)(c, p, pid, s, global_seed, t, str(out_dir_p))  # pyright: ignore[reportUnknownArgumentType]
