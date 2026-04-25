@@ -1,0 +1,11 @@
+# Pheromone frozen at tau_0; only η drives sampling. The
+# baselines/heuristic_only.solve() entrypoint freezes pheromone updates.
+
+[solver]
+pheromone_mode = "unified"
+tau_signed = false
+alpha = 0.0
+beta = 2.0
+tau_0 = 0.0
+population = 30
+iter_cap = 200

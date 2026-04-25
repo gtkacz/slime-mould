@@ -1,0 +1,12 @@
+# Time-limited exact DFS with parity + articulation prunes.
+# baselines/backtracking.solve() ignores most kernel knobs; only
+# wall_clock_s and iter_cap control termination.
+
+[solver]
+pheromone_mode = "unified"
+tau_signed = false
+alpha = 0.0
+beta = 0.0
+population = 1
+iter_cap = 1
+wall_clock_s = 300.0

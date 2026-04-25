@@ -1,0 +1,3 @@
+[solver]
+pheromone_mode = "stratified"
+tau_signed = true

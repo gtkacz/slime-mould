@@ -1,0 +1,14 @@
+# Classical ACO baseline: tau ≥ 0, fitness-proportional positive deposit,
+# constant evaporation. Implementation lives in baselines/aco_vanilla.py;
+# the SolverConfig fields below tune the same knobs the kernel honours.
+
+[solver]
+pheromone_mode = "unified"
+tau_signed = false
+alpha = 1.0
+beta = 2.0
+tau_max = 10.0
+z = 0.0
+tau_0 = 1.0
+population = 30
+iter_cap = 200

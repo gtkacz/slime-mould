@@ -1,0 +1,30 @@
+# Defaults from docs/design.md §5 Table.
+# String sentinels resolve to floats inside zipmould.solver.state.pack.
+
+[solver]
+gamma_man = 1.0
+gamma_warns = 1.0
+gamma_art = 1.0
+gamma_par = 0.5
+
+alpha = 1.0
+beta = 2.0
+
+beta1 = "N_squared"
+beta2 = 1.0
+beta3 = "10_N_squared"
+
+tau_max = 10.0
+z = 0.05
+tau_0 = 0.0
+
+population = 30
+iter_cap = 200
+wall_clock_s = 300.0
+
+pheromone_mode = "unified"
+tau_signed = true
+
+visible_walkers = 5
+frame_interval = 5
+tau_delta_epsilon = 0.001

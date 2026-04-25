@@ -1,0 +1,15 @@
+# Uniform-random walker; α = β = 0 collapses the softmax to uniform
+# over legal moves. baselines/random_walk.solve() matches this exactly
+# without invoking the SMA update.
+
+[solver]
+pheromone_mode = "unified"
+tau_signed = false
+alpha = 0.0
+beta = 0.0
+gamma_man = 0.0
+gamma_warns = 0.0
+gamma_art = 0.0
+gamma_par = 0.0
+population = 30
+iter_cap = 200
