@@ -1,0 +1,42 @@
+# Stage-1 manifest: conditions to run on the dev split.
+#
+# Per design.md §9, this stage tests 8 conditions on the 37 dev
+# puzzles with 10 seeds each (jobs = 8 * 37 * 10 = 2960).  Traces
+# are written only when seed == 0 to bound disk usage.
+
+stage = "stage1"
+split = "dev"
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+trace_seeds = [0]
+
+[[conditions]]
+name = "zipmould-uni-signed"
+config = "configs/ablations/zipmould-uni-signed.toml"
+
+[[conditions]]
+name = "zipmould-uni-positive"
+config = "configs/ablations/zipmould-uni-positive.toml"
+
+[[conditions]]
+name = "zipmould-strat-signed"
+config = "configs/ablations/zipmould-strat-signed.toml"
+
+[[conditions]]
+name = "zipmould-strat-positive"
+config = "configs/ablations/zipmould-strat-positive.toml"
+
+[[conditions]]
+name = "aco-vanilla"
+config = "configs/ablations/aco-vanilla.toml"
+
+[[conditions]]
+name = "heuristic-only"
+config = "configs/ablations/heuristic-only.toml"
+
+[[conditions]]
+name = "random"
+config = "configs/ablations/random.toml"
+
+[[conditions]]
+name = "backtracking"
+config = "configs/ablations/backtracking.toml"
