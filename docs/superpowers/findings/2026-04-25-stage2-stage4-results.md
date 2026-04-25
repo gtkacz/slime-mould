@@ -49,7 +49,7 @@ Practical implication for the algorithm: the tuned configuration appears to have
 ## Strengthened evidence (post-hoc, descriptive only)
 
 These analyses were added after the locked test result to characterise the
-outcome more fully than a single McNemar test. They do not adjust the
+outcome more honestly than a single McNemar test. They do not adjust the
 pre-registered conclusion in `report.json`.
 
 ### Paired bootstrap CI on per-puzzle solve-count difference
@@ -64,8 +64,9 @@ The CI lower bound at zero corroborates the McNemar non-significance:
 the puzzle-level evidence cannot rule out a true zero gap. Every per-puzzle
 diff is in {0, +1}, so the resampled sum is non-negative on every draw — no
 resample favours backtracking. The upper bound at three reflects right-skew:
-with one gap puzzle in 37, the resampled gap-count is approximately
-Poisson(1), and the 97.5% tail naturally sits near three.
+with one gap puzzle in 37, the resampled gap-count follows
+Binomial(37, 1/37), well-approximated by Poisson(1), so the 97.5% tail
+consequently sits near three.
 
 ### Seed-level reliability (per condition)
 
