@@ -40,7 +40,7 @@ class Puzzle:
         all_cells = {(r, c) for r in range(self.N) for c in range(self.N)}
         return frozenset(all_cells - self.blocked)
 
-    def L(self) -> int:
+    def L(self) -> int:  # noqa: N802
         return self.N * self.N - len(self.blocked)
 
 
@@ -56,7 +56,7 @@ def _from_cbor_dict(raw: dict[str, object]) -> Puzzle:
 
     waypoints = tuple((int(r), int(c)) for r, c in waypoints_raw)  # type: ignore[union-attr]
     walls = frozenset(
-        _canonical_edge((int(a[0]), int(a[1])), (int(b[0]), int(b[1])))
+        _canonical_edge((int(a[0]), int(a[1])), (int(b[0]), int(b[1])))  # type: ignore[arg-type]
         for a, b in walls_raw  # type: ignore[union-attr]
     )
     blocked = frozenset((int(r), int(c)) for r, c in blocked_raw)  # type: ignore[union-attr]
