@@ -1,0 +1,126 @@
+{
+  "asymmetric_puzzles_vs_strongest": {
+    "baseline_only": [],
+    "both_fail": [],
+    "candidate_only": [
+      "level_239"
+    ]
+  },
+  "by_condition_solve_counts": {
+    "aco-vanilla": 10,
+    "backtracking": 36,
+    "heuristic-only": 22,
+    "tuned-winner": 37
+  },
+  "candidate": "tuned-winner",
+  "efficiency_vs_strongest": {
+    "iters_diff_quartiles": [
+      -68992.0,
+      -2944.5,
+      -536.5
+    ],
+    "n_pairs": 1080,
+    "wall_ms_diff_quartiles": [
+      -563.0021075030527,
+      -26.540900998952566,
+      -1.9220537524233805
+    ]
+  },
+  "primary_bootstrap_diff": {
+    "ci_high": 3.0,
+    "ci_level": 0.95,
+    "ci_low": 0.0,
+    "median_boot_diff": 1.0,
+    "n_boot": 10000,
+    "n_puzzles": 37,
+    "observed_diff": 1,
+    "rng_seed": 20260425
+  },
+  "secondary_asymmetric_puzzles": {
+    "aco-vanilla": {
+      "baseline_only": [],
+      "both_fail": [],
+      "candidate_only": [
+        "level_027",
+        "level_052",
+        "level_054",
+        "level_068",
+        "level_079",
+        "level_084",
+        "level_086",
+        "level_097",
+        "level_109",
+        "level_121",
+        "level_124",
+        "level_137",
+        "level_140",
+        "level_145",
+        "level_155",
+        "level_176",
+        "level_177",
+        "level_195",
+        "level_199",
+        "level_207",
+        "level_212",
+        "level_217",
+        "level_225",
+        "level_227",
+        "level_234",
+        "level_240",
+        "level_245"
+      ]
+    },
+    "heuristic-only": {
+      "baseline_only": [],
+      "both_fail": [],
+      "candidate_only": [
+        "level_084",
+        "level_086",
+        "level_109",
+        "level_121",
+        "level_124",
+        "level_137",
+        "level_140",
+        "level_176",
+        "level_177",
+        "level_195",
+        "level_199",
+        "level_207",
+        "level_212",
+        "level_225",
+        "level_227"
+      ]
+    }
+  },
+  "seed_reliability": [
+    {
+      "condition": "aco-vanilla",
+      "median_puzzle_solve_rate": 0.0,
+      "n_puzzles": 37,
+      "puzzles_never": 27,
+      "puzzles_perfect": 0
+    },
+    {
+      "condition": "backtracking",
+      "median_puzzle_solve_rate": 1.0,
+      "n_puzzles": 37,
+      "puzzles_never": 1,
+      "puzzles_perfect": 36
+    },
+    {
+      "condition": "heuristic-only",
+      "median_puzzle_solve_rate": 0.06666666666666667,
+      "n_puzzles": 37,
+      "puzzles_never": 15,
+      "puzzles_perfect": 7
+    },
+    {
+      "condition": "tuned-winner",
+      "median_puzzle_solve_rate": 1.0,
+      "n_puzzles": 37,
+      "puzzles_never": 0,
+      "puzzles_perfect": 37
+    }
+  ],
+  "strongest_baseline": "backtracking"
+}

@@ -8,12 +8,21 @@ Output: ``experiments/stage4/out/extended_report.json``.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 import polars as pl
+import typer
+from loguru import logger
 
-from zipmould.metrics import aggregate
+# Re-using the canonical Stage-4 solve-count helper rather than reimplementing.
+from experiments.stage4.analyze import BASELINES, CANDIDATE, _solve_counts  # pyright: ignore[reportPrivateUsage]
+from zipmould.logging_config import configure_logging
+from zipmould.metrics import aggregate, load_results
+
+app = typer.Typer(add_completion=False, no_args_is_help=False)
 
 
 def paired_bootstrap_diff(
@@ -141,3 +150,64 @@ def efficiency_compare(
         "iters_diff_quartiles": [float(np.quantile(diff_iters, q)) for q in (0.25, 0.5, 0.75)],
         "wall_ms_diff_quartiles": [float(np.quantile(diff_wall, q)) for q in (0.25, 0.5, 0.75)],
     }
+
+
+@app.command()
+def main(out_dir: Path = Path("experiments/stage4/out")) -> None:
+    """Compute extended analyses and emit ``extended_report.json``."""
+    configure_logging()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    df = load_results(out_dir / "results.parquet")
+
+    counts = _solve_counts(df)
+    baselines = list(BASELINES)
+    strongest = max(baselines, key=lambda b: counts[b])
+
+    agg = aggregate(df)
+    pivot = (
+        agg.filter(pl.col("condition").is_in([CANDIDATE, strongest]))
+        .pivot(values="solved_any", index="puzzle_id", on="condition")
+        .drop_nulls([CANDIDATE, strongest])
+    )
+
+    report: dict[str, Any] = {
+        "candidate": CANDIDATE,
+        "strongest_baseline": strongest,
+        "by_condition_solve_counts": counts,
+        "seed_reliability": seed_reliability(df),
+        "primary_bootstrap_diff": paired_bootstrap_diff(
+            pivot,
+            baseline=strongest,
+            candidate=CANDIDATE,
+        ),
+        "asymmetric_puzzles_vs_strongest": asymmetric_puzzles(
+            df,
+            baseline=strongest,
+            candidate=CANDIDATE,
+        ),
+        "secondary_asymmetric_puzzles": {
+            b: asymmetric_puzzles(df, baseline=b, candidate=CANDIDATE)
+            for b in baselines
+            if b != strongest
+        },
+        "efficiency_vs_strongest": efficiency_compare(
+            df,
+            baseline=strongest,
+            candidate=CANDIDATE,
+        ),
+    }
+    (out_dir / "extended_report.json").write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    logger.info(
+        "Stage-4 extended: bootstrap CI [{:.2f}, {:.2f}] on diff vs {} (observed={})",
+        report["primary_bootstrap_diff"]["ci_low"],
+        report["primary_bootstrap_diff"]["ci_high"],
+        strongest,
+        report["primary_bootstrap_diff"]["observed_diff"],
+    )
+
+
+if __name__ == "__main__":
+    app()
