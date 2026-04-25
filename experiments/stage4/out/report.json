@@ -1,0 +1,41 @@
+{
+  "by_condition_solve_counts": {
+    "aco-vanilla": 10,
+    "backtracking": 36,
+    "heuristic-only": 22,
+    "tuned-winner": 37
+  },
+  "primary_mcnemar": {
+    "b": 1,
+    "baseline": "backtracking",
+    "c": 0,
+    "candidate": "tuned-winner",
+    "decision": "trend favours candidate",
+    "n": 37,
+    "significant": false,
+    "statistic": 1.0
+  },
+  "secondary_mcnemar": [
+    {
+      "b": 27,
+      "baseline": "aco-vanilla",
+      "c": 0,
+      "candidate": "tuned-winner",
+      "decision": "candidate wins",
+      "n": 37,
+      "significant": true,
+      "statistic": 5.196152422706632
+    },
+    {
+      "b": 15,
+      "baseline": "heuristic-only",
+      "c": 0,
+      "candidate": "tuned-winner",
+      "decision": "candidate wins",
+      "n": 37,
+      "significant": true,
+      "statistic": 3.8729833462074166
+    }
+  ],
+  "strongest_baseline": "backtracking"
+}

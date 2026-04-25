@@ -1,0 +1,31 @@
+{
+  "by_condition": [
+    {
+      "condition": "aco-vanilla",
+      "failed": 0,
+      "solved": 73,
+      "total": 1110
+    },
+    {
+      "condition": "backtracking",
+      "failed": 0,
+      "solved": 1080,
+      "total": 1110
+    },
+    {
+      "condition": "heuristic-only",
+      "failed": 0,
+      "solved": 414,
+      "total": 1110
+    },
+    {
+      "condition": "tuned-winner",
+      "failed": 0,
+      "solved": 1110,
+      "total": 1110
+    }
+  ],
+  "n_failed": 0,
+  "n_jobs": 4440,
+  "n_solved": 2677
+}
