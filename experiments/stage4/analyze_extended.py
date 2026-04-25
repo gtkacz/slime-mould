@@ -46,3 +46,28 @@ def paired_bootstrap_diff(
         "ci_level": float(ci_level),
         "rng_seed": int(rng_seed),
     }
+
+
+def seed_reliability(df: pl.DataFrame) -> list[dict[str, Any]]:
+    """Per-condition seed-level reliability across the 37-puzzle test set.
+
+    Reports total solve rate, the count of puzzles solved by every seed
+    (perfect reliability), the count never solved (zero reliability),
+    and the median per-puzzle solve rate.
+    """
+    per_pc = df.group_by(["condition", "puzzle_id"]).agg(
+        n_seeds=pl.len(),
+        n_solved=pl.col("solved").sum(),
+        seed_solve_rate=pl.col("solved").mean(),
+    )
+    return (
+        per_pc.group_by("condition")
+        .agg(
+            n_puzzles=pl.len(),
+            puzzles_perfect=(pl.col("seed_solve_rate") >= 1.0).sum(),
+            puzzles_never=(pl.col("seed_solve_rate") <= 0.0).sum(),
+            median_puzzle_solve_rate=pl.col("seed_solve_rate").median(),
+        )
+        .sort("condition")
+        .to_dicts()
+    )
