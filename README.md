@@ -1,3 +1,6 @@
+# ZipMould
+ZipMould is a [Li](https://www.sciencedirect.com/science/article/abs/pii/S0167739X19320941)-inspired slime mould solver for Zip puzzles.
+
 ## 1. Problem Statement
 
 A *Zip* puzzle consists of:
