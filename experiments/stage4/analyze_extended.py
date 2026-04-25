@@ -13,6 +13,8 @@ from typing import Any
 import numpy as np
 import polars as pl
 
+from zipmould.metrics import aggregate
+
 
 def paired_bootstrap_diff(
     pivot: pl.DataFrame,
@@ -71,3 +73,35 @@ def seed_reliability(df: pl.DataFrame) -> list[dict[str, Any]]:
         .sort("condition")
         .to_dicts()
     )
+
+
+def asymmetric_puzzles(
+    df: pl.DataFrame,
+    baseline: str,
+    candidate: str,
+) -> dict[str, list[str]]:
+    """Identify puzzles where solved_any differs between two conditions.
+
+    Returns three sorted lists: puzzles only the candidate solved, puzzles
+    only the baseline solved, and puzzles neither solved.
+    """
+    agg = aggregate(df)
+    pivot = (
+        agg.filter(pl.col("condition").is_in([baseline, candidate]))
+        .pivot(values="solved_any", index="puzzle_id", on="condition")
+        .drop_nulls([baseline, candidate])
+    )
+    cand_only = sorted(
+        pivot.filter((~pl.col(baseline)) & pl.col(candidate))["puzzle_id"].to_list(),
+    )
+    base_only = sorted(
+        pivot.filter(pl.col(baseline) & (~pl.col(candidate)))["puzzle_id"].to_list(),
+    )
+    both_fail = sorted(
+        pivot.filter((~pl.col(baseline)) & (~pl.col(candidate)))["puzzle_id"].to_list(),
+    )
+    return {
+        "candidate_only": cand_only,
+        "baseline_only": base_only,
+        "both_fail": both_fail,
+    }
