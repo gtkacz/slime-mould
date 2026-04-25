@@ -1,4 +1,3 @@
-from functools import cached_property
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -47,24 +46,23 @@ class Cell:
         if Direction.LEFT in self.blocked_directions:
             bits |= 1
 
-
         # Format the integer as an uppercase Hexadecimal string
         return f"{bits:X}"
 
     @classmethod
     def walls_from_representation(cls, value: str) -> tuple[Wall, ...]:
         """Reconstructs a Cell from a hexadecimal character representation.
-        
+
         Args:
             value (str): A hexadecimal string representing blocked directions.
-            
+
         Returns:
             tuple[Wall, ...]: The reconstructed walls for the represented cell.
         """
         bits = int(value, 16)
-        
+
         blocked_directions = []
-        
+
         if bits & 8:
             blocked_directions.append(Direction.TOP)
 
@@ -77,6 +75,4 @@ class Cell:
         if bits & 1:
             blocked_directions.append(Direction.LEFT)
 
-        
         return tuple(Wall(direction) for direction in blocked_directions)
-
