@@ -121,13 +121,13 @@ Append to `/home/gtkacz/Codes/slime-mould/experiments/stage4/analyze_extended.py
 def seed_reliability(df: pl.DataFrame) -> list[dict[str, Any]]:
     """Per-condition seed-level reliability across the 37-puzzle test set.
 
-    Reports total solve rate, the count of puzzles solved by every seed
-    (perfect reliability), the count never solved (zero reliability),
-    and the median per-puzzle solve rate.
+    Reports the puzzle count, the count of puzzles solved by every seed
+    (perfect reliability), the count never solved by any seed (zero
+    reliability), and the median per-puzzle solve rate across the
+    condition's puzzles.
     """
     per_pc = df.group_by(["condition", "puzzle_id"]).agg(
         n_seeds=pl.len(),
-        n_solved=pl.col("solved").sum(),
         seed_solve_rate=pl.col("solved").mean(),
     )
     return (
