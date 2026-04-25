@@ -14,7 +14,7 @@ import math
 import numba as nb
 import numpy as np
 
-from zipmould.fitness import fitness  # noqa: F401  # pyright: ignore[reportUnusedImport]
+from zipmould.fitness import fitness
 from zipmould.solver._heuristics import (
     NEG_INF,
     _bit_clear,  # noqa: F401  # pyright: ignore[reportUnusedImport, reportPrivateUsage]
@@ -375,3 +375,90 @@ def _pheromone_update(  # noqa: PLR0912  # pyright: ignore[reportUnusedFunction]
             if new_val < tau_clip_min:  # noqa: PLR1730
                 new_val = tau_clip_min
             tau[s, e] = new_val
+
+
+@nb.njit(cache=True)  # type: ignore[misc]
+def _run_iteration(  # pyright: ignore[reportUnusedFunction]
+    pos: np.ndarray,  # type: ignore[type-arg]
+    visited: np.ndarray,  # type: ignore[type-arg]
+    path: np.ndarray,  # type: ignore[type-arg]
+    path_len: np.ndarray,  # type: ignore[type-arg]
+    segment: np.ndarray,  # type: ignore[type-arg]
+    status: np.ndarray,  # type: ignore[type-arg]
+    f0_remaining: np.ndarray,  # type: ignore[type-arg]
+    f1_remaining: np.ndarray,  # type: ignore[type-arg]
+    walker_fitness: np.ndarray,  # type: ignore[type-arg]
+    adjacency: np.ndarray,  # type: ignore[type-arg]
+    edge_of: np.ndarray,  # type: ignore[type-arg]
+    waypoint_of: np.ndarray,  # type: ignore[type-arg]
+    parity_table: np.ndarray,  # type: ignore[type-arg]
+    manhattan_table: np.ndarray,  # type: ignore[type-arg]
+    waypoint_cells: np.ndarray,  # type: ignore[type-arg]
+    tau: np.ndarray,  # type: ignore[type-arg]
+    pheromone_mode: int,
+    n_walkers: int,
+    n_stripes: int,
+    K: int,  # noqa: N803
+    L: int,  # noqa: N803
+    N2: int,  # noqa: N803
+    N: int,  # noqa: N803
+    alpha: float,
+    beta_log: float,
+    gamma_man: float,
+    gamma_warns: float,
+    gamma_art: float,
+    gamma_par: float,
+    beta1: float,
+    beta2: float,
+    beta3: float,
+    f0_total: int,
+    f1_total: int,
+    work_stack: np.ndarray,  # type: ignore[type-arg]
+    t: int,
+    T: int,  # noqa: N803
+    z: float,
+    tau_max: float,
+    tau_clip_min: float,
+    freeze_pheromone: int,
+) -> int:
+    for w in range(n_walkers):
+        _init_walker(
+            w, pos, visited, path, path_len, segment, status,
+            f0_remaining, f1_remaining, waypoint_cells, parity_table,
+            f0_total, f1_total,
+        )
+        _walker_run(
+            w, pos, visited, path, path_len, segment, status,
+            f0_remaining, f1_remaining, adjacency, edge_of, waypoint_of,
+            parity_table, manhattan_table, waypoint_cells, tau,
+            pheromone_mode, n_stripes, K, L, N2,
+            alpha, beta_log, gamma_man, gamma_warns, gamma_art, gamma_par,
+            work_stack,
+        )
+
+    for w in range(n_walkers):
+        plen = int(path_len[w])
+        last_cell = int(path[w, plen - 1]) if plen > 0 else int(waypoint_cells[0])
+        f = fitness(plen, int(segment[w]), last_cell, waypoint_cells, L, K, N, beta1, beta2, beta3)
+        walker_fitness[w] = f
+
+    solved_walker = -1
+    for w in range(n_walkers):
+        if status[w] == 2:  # noqa: PLR2004
+            solved_walker = w
+            break
+
+    if freeze_pheromone == 0:
+        _pheromone_update(
+            tau, walker_fitness, path, path_len, edge_of, waypoint_of, adjacency,
+            n_walkers, n_stripes, pheromone_mode, K, t, T, z, tau_max, tau_clip_min,
+        )
+
+    if solved_walker >= 0:
+        return solved_walker
+    return -1
+
+
+@nb.njit(cache=True)  # type: ignore[misc]
+def _seed_kernel(seed: int) -> None:  # pyright: ignore[reportUnusedFunction]
+    np.random.seed(seed)
