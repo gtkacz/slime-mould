@@ -1,0 +1,54 @@
+{
+  "rankings": [
+    {
+      "decision": "locked: tuned >= default",
+      "dev_default_solved": 186,
+      "dev_solved": 370,
+      "locked_config_path": "configs/tuned/zipmould-uni-positive.toml",
+      "median_iters_solved_stage1": 11.0,
+      "study_best_train_solved": 855.0,
+      "study_n_trials": 50,
+      "variant": "zipmould-uni-positive"
+    },
+    {
+      "decision": "locked: tuned >= default",
+      "dev_default_solved": 223,
+      "dev_solved": 370,
+      "locked_config_path": "configs/tuned/zipmould-uni-signed.toml",
+      "median_iters_solved_stage1": 25.0,
+      "study_best_train_solved": 855.0,
+      "study_n_trials": 50,
+      "variant": "zipmould-uni-signed"
+    },
+    {
+      "decision": "locked: tuned >= default",
+      "dev_default_solved": 188,
+      "dev_solved": 369,
+      "locked_config_path": "configs/tuned/zipmould-strat-positive.toml",
+      "median_iters_solved_stage1": 8.0,
+      "study_best_train_solved": 854.0,
+      "study_n_trials": 50,
+      "variant": "zipmould-strat-positive"
+    },
+    {
+      "decision": "locked: tuned >= default",
+      "dev_default_solved": 220,
+      "dev_solved": 369,
+      "locked_config_path": "configs/tuned/zipmould-strat-signed.toml",
+      "median_iters_solved_stage1": 18.0,
+      "study_best_train_solved": 854.0,
+      "study_n_trials": 50,
+      "variant": "zipmould-strat-signed"
+    }
+  ],
+  "winner": {
+    "decision": "locked: tuned >= default",
+    "dev_default_solved": 186,
+    "dev_solved": 370,
+    "locked_config_path": "configs/tuned/zipmould-uni-positive.toml",
+    "median_iters_solved_stage1": 11.0,
+    "study_best_train_solved": 855.0,
+    "study_n_trials": 50,
+    "variant": "zipmould-uni-positive"
+  }
+}

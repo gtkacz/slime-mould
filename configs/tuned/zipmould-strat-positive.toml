@@ -1,0 +1,21 @@
+[solver]
+alpha = 0.18971280628798537
+beta = 0.7021608408466816
+beta1 = "N_squared"
+beta2 = 1.0
+beta3 = "10_N_squared"
+frame_interval = 5
+gamma_art = 0.2648298894329976
+gamma_man = 0.37642651649065445
+gamma_par = 0.2397779784202144
+gamma_warns = 3.4025305184716115
+iter_cap = 200
+pheromone_mode = "stratified"
+population = 42
+tau_0 = 0.0
+tau_delta_epsilon = 0.001
+tau_max = 1.968436522633545
+tau_signed = false
+visible_walkers = 5
+wall_clock_s = 300.0
+z = 0.41338051777374885

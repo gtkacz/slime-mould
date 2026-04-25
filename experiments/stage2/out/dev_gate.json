@@ -1,0 +1,34 @@
+[
+  {
+    "decision": "locked: tuned >= default",
+    "default_solved": 223,
+    "locked_config_path": "configs/tuned/zipmould-uni-signed.toml",
+    "n_trials_total": 50,
+    "tuned_solved": 370,
+    "variant": "zipmould-uni-signed"
+  },
+  {
+    "decision": "locked: tuned >= default",
+    "default_solved": 186,
+    "locked_config_path": "configs/tuned/zipmould-uni-positive.toml",
+    "n_trials_total": 50,
+    "tuned_solved": 370,
+    "variant": "zipmould-uni-positive"
+  },
+  {
+    "decision": "locked: tuned >= default",
+    "default_solved": 220,
+    "locked_config_path": "configs/tuned/zipmould-strat-signed.toml",
+    "n_trials_total": 50,
+    "tuned_solved": 369,
+    "variant": "zipmould-strat-signed"
+  },
+  {
+    "decision": "locked: tuned >= default",
+    "default_solved": 188,
+    "locked_config_path": "configs/tuned/zipmould-strat-positive.toml",
+    "n_trials_total": 50,
+    "tuned_solved": 369,
+    "variant": "zipmould-strat-positive"
+  }
+]
