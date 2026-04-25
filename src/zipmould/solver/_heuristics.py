@@ -4,6 +4,14 @@ Each component returns a real-valued score; the kernel applies softplus
 and gamma exponentiation once at the call site to keep the inner sum
 predictable. Articulation returns -inf when removing the candidate
 cell would isolate part of the unvisited free subgraph.
+
+Caller contract for h_warnsdorff / h_articulation:
+- cell_next MUST NOT be pre-marked in `visited` on entry; both helpers
+  set then clear the bit themselves and a pre-existing mark would be
+  silently lost on exit.
+- work_stack passed to h_articulation MUST have length >= n2 to hold
+  the worst-case flood-fill of the entire free subgraph; Numba does
+  not bounds-check ndarray writes inside @njit code.
 """
 
 from __future__ import annotations
