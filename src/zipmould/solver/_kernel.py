@@ -462,3 +462,147 @@ def _run_iteration(  # pyright: ignore[reportUnusedFunction]
 @nb.njit(cache=True)  # type: ignore[misc]
 def _seed_kernel(seed: int) -> None:  # pyright: ignore[reportUnusedFunction]
     np.random.seed(seed)
+
+
+@nb.njit(cache=True)  # type: ignore[misc]
+def _diff_tau(  # pyright: ignore[reportUnusedFunction]
+    prev: np.ndarray,  # type: ignore[type-arg]
+    cur: np.ndarray,  # type: ignore[type-arg]
+    eps: float,
+    scratch: np.ndarray,  # type: ignore[type-arg]
+) -> int:
+    n_stripes = cur.shape[0]
+    n_edges = cur.shape[1]
+    cnt = 0
+    for s in range(n_stripes):
+        for e in range(n_edges):
+            d = float(cur[s, e]) - float(prev[s, e])
+            if d > eps or d < -eps:
+                scratch[cnt, 0] = e
+                scratch[cnt, 1] = s
+                scratch[cnt, 2] = d
+                cnt += 1
+    return cnt
+
+
+@nb.njit(cache=True)  # type: ignore[misc]
+def _kernel_run(  # noqa: PLR0912  # pyright: ignore[reportUnusedFunction]
+    pos: np.ndarray,  # type: ignore[type-arg]
+    visited: np.ndarray,  # type: ignore[type-arg]
+    path: np.ndarray,  # type: ignore[type-arg]
+    path_len: np.ndarray,  # type: ignore[type-arg]
+    segment: np.ndarray,  # type: ignore[type-arg]
+    status: np.ndarray,  # type: ignore[type-arg]
+    f0_remaining: np.ndarray,  # type: ignore[type-arg]
+    f1_remaining: np.ndarray,  # type: ignore[type-arg]
+    walker_fitness: np.ndarray,  # type: ignore[type-arg]
+    adjacency: np.ndarray,  # type: ignore[type-arg]
+    edge_of: np.ndarray,  # type: ignore[type-arg]
+    waypoint_of: np.ndarray,  # type: ignore[type-arg]
+    parity_table: np.ndarray,  # type: ignore[type-arg]
+    manhattan_table: np.ndarray,  # type: ignore[type-arg]
+    waypoint_cells: np.ndarray,  # type: ignore[type-arg]
+    tau: np.ndarray,  # type: ignore[type-arg]
+    pheromone_mode: int,
+    n_walkers: int,
+    n_stripes: int,
+    K: int,  # noqa: N803
+    L: int,  # noqa: N803
+    N2: int,  # noqa: N803
+    N: int,  # noqa: N803
+    alpha: float,
+    beta_log: float,
+    gamma_man: float,
+    gamma_warns: float,
+    gamma_art: float,
+    gamma_par: float,
+    beta1: float,
+    beta2: float,
+    beta3: float,
+    f0_total: int,
+    f1_total: int,
+    work_stack: np.ndarray,  # type: ignore[type-arg]
+    iter_cap: int,
+    z: float,
+    tau_max: float,
+    tau_clip_min: float,
+    freeze_pheromone: int,
+    seed: int,
+    frame_interval: int,
+    visible_walkers: int,
+    tau_delta_epsilon: float,
+    frame_t: np.ndarray,  # type: ignore[type-arg]
+    frame_v_b: np.ndarray,  # type: ignore[type-arg]
+    frame_v_c: np.ndarray,  # type: ignore[type-arg]
+    frame_best_w: np.ndarray,  # type: ignore[type-arg]
+    frame_best_fitness: np.ndarray,  # type: ignore[type-arg]
+    frame_walker_ids: np.ndarray,  # type: ignore[type-arg]
+    frame_walker_cells: np.ndarray,  # type: ignore[type-arg]
+    frame_walker_segments: np.ndarray,  # type: ignore[type-arg]
+    frame_walker_status: np.ndarray,  # type: ignore[type-arg]
+    frame_walker_fitness: np.ndarray,  # type: ignore[type-arg]
+    frame_tau_count: np.ndarray,  # type: ignore[type-arg]
+    frame_tau_payload: np.ndarray,  # type: ignore[type-arg]
+    tau_prev: np.ndarray,  # type: ignore[type-arg]
+    tau_scratch: np.ndarray,  # type: ignore[type-arg]
+) -> int:
+    _seed_kernel(seed)
+    solved_iter = -1
+    n_frames = 0
+
+    for s in range(n_stripes):
+        for e in range(tau_prev.shape[1]):
+            tau_prev[s, e] = 0.0
+
+    for t in range(iter_cap):
+        res = _run_iteration(
+            pos, visited, path, path_len, segment, status,
+            f0_remaining, f1_remaining, walker_fitness,
+            adjacency, edge_of, waypoint_of, parity_table,
+            manhattan_table, waypoint_cells, tau,
+            pheromone_mode, n_walkers, n_stripes, K, L, N2, N,
+            alpha, beta_log, gamma_man, gamma_warns, gamma_art, gamma_par,
+            beta1, beta2, beta3, f0_total, f1_total, work_stack,
+            t, iter_cap, z, tau_max, tau_clip_min, freeze_pheromone,
+        )
+
+        if (t % frame_interval) == 0 or res >= 0:
+            best_w = 0
+            best_f = walker_fitness[0]
+            for w in range(1, n_walkers):
+                if walker_fitness[w] > best_f:
+                    best_f = walker_fitness[w]
+                    best_w = w
+            progress = float(t) / float(iter_cap)
+            frame_t[n_frames] = t
+            frame_v_b[n_frames] = math.tanh(1.0 - progress)
+            frame_v_c[n_frames] = 1.0 - progress
+            frame_best_w[n_frames] = best_w
+            frame_best_fitness[n_frames] = best_f
+            for k in range(visible_walkers):
+                if k < n_walkers:
+                    cell = int(path[k, max(int(path_len[k]) - 1, 0)])
+                    frame_walker_ids[n_frames, k] = k
+                    frame_walker_cells[n_frames, k] = cell
+                    frame_walker_segments[n_frames, k] = int(segment[k])
+                    frame_walker_status[n_frames, k] = int(status[k])
+                    frame_walker_fitness[n_frames, k] = walker_fitness[k]
+                else:
+                    frame_walker_ids[n_frames, k] = -1
+            cnt = _diff_tau(tau_prev, tau, tau_delta_epsilon, tau_scratch)
+            frame_tau_count[n_frames] = cnt
+            for i in range(cnt):
+                frame_tau_payload[n_frames, i, 0] = tau_scratch[i, 0]
+                frame_tau_payload[n_frames, i, 1] = tau_scratch[i, 1]
+                frame_tau_payload[n_frames, i, 2] = tau_scratch[i, 2]
+            for s in range(n_stripes):
+                for e in range(tau.shape[1]):
+                    tau_prev[s, e] = tau[s, e]
+            n_frames += 1
+
+        if res >= 0:
+            solved_iter = t
+            break
+
+    return n_frames if solved_iter < 0 else (n_frames | (1 << 30))
+
