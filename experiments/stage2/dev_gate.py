@@ -60,10 +60,11 @@ def _params_to_toml(params: dict[str, float | int], variant: str) -> str:
 
 
 def _default_solved_from_stage1(variant: str, parquet_path: Path) -> int:
+    # Counts (puzzle, seed) pairs to match `evaluate(...)`'s grain so the
+    # `tuned >= default` decision is apples-to-apples.
     df = pl.read_parquet(str(parquet_path))
     sub = df.filter((pl.col("condition") == variant) & (~pl.col("failed")))
-    grouped = sub.group_by("puzzle_id").agg(pl.col("solved").any().alias("solved_any"))
-    return int(grouped["solved_any"].sum())
+    return int(sub["solved"].sum())
 
 
 @app.command()
