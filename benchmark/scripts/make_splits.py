@@ -11,7 +11,6 @@ Run:
 """
 
 import json
-import logging
 import random
 import sys
 from collections import defaultdict
@@ -19,8 +18,9 @@ from pathlib import Path
 from typing import Any
 
 import cbor2
+from loguru import logger
 
-logger = logging.getLogger("make_splits")
+from zipmould.logging_config import configure_logging
 
 # Frozen per docs/design.md sec 6.2 — the test set is sealed once this
 # split is produced. Changing the seed invalidates the test set.
@@ -77,7 +77,7 @@ def make_splits(puzzles_path: Path, out_path: Path) -> None:
     with puzzles_path.open("rb") as f:
         payload = cbor2.load(f)
     puzzles: list[dict[str, Any]] = payload["puzzles"]
-    logger.info("Loaded %d puzzles from %s", len(puzzles), puzzles_path)
+    logger.info("Loaded {} puzzles from {}", len(puzzles), puzzles_path)
 
     strata = _stratify(puzzles)
     rng = random.Random(SPLIT_SEED)
@@ -104,7 +104,7 @@ def make_splits(puzzles_path: Path, out_path: Path) -> None:
             }
         )
         logger.info(
-            "stratum %s/%s: total=%d train=%d dev=%d test=%d",
+            "stratum {}/{}: total={} train={} dev={} test={}",
             key[0],
             key[1],
             len(ids),
@@ -131,7 +131,7 @@ def make_splits(puzzles_path: Path, out_path: Path) -> None:
         json.dump(splits, f, indent=2)
         f.write("\n")
     logger.info(
-        "Wrote %s (train=%d dev=%d test=%d)",
+        "Wrote {} (train={} dev={} test={})",
         out_path,
         len(train),
         len(dev),
@@ -140,7 +140,7 @@ def make_splits(puzzles_path: Path, out_path: Path) -> None:
 
 
 def main() -> int:
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    configure_logging(level="INFO")
     repo_root = Path(__file__).resolve().parents[2]
     puzzles_path = repo_root / "benchmark" / "data" / "puzzles.cbor"
     out_path = repo_root / "benchmark" / "data" / "splits.json"

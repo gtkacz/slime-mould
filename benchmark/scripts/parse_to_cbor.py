@@ -10,15 +10,15 @@ Run:
 """
 
 import json
-import logging
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import cbor2
+from loguru import logger
 
-logger = logging.getLogger("parse_to_cbor")
+from zipmould.logging_config import configure_logging
 
 PUZZLE_FORMAT_VERSION = 1
 
@@ -148,13 +148,13 @@ def _normalize_puzzle(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def parse_corpus(raw_path: Path, out_path: Path) -> None:
-    logger.info("Reading %s", raw_path)
+    logger.info("Reading {}", raw_path)
     with raw_path.open() as f:
         raw_puzzles = json.load(f)
 
     ordered = sorted(raw_puzzles, key=lambda p: p["sortOrder"])
     normalized = [_normalize_puzzle(p) for p in ordered]
-    logger.info("Normalized %d puzzles", len(normalized))
+    logger.info("Normalized {} puzzles", len(normalized))
 
     payload = {
         "version": PUZZLE_FORMAT_VERSION,
@@ -165,11 +165,11 @@ def parse_corpus(raw_path: Path, out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("wb") as f:
         cbor2.dump(payload, f)
-    logger.info("Wrote %s (%d bytes)", out_path, out_path.stat().st_size)
+    logger.info("Wrote {} ({} bytes)", out_path, out_path.stat().st_size)
 
 
 def main() -> int:
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    configure_logging(level="INFO")
     repo_root = Path(__file__).resolve().parents[2]
     raw_path = repo_root / "benchmark" / "data" / "raw.json"
     out_path = repo_root / "benchmark" / "data" / "puzzles.cbor"
