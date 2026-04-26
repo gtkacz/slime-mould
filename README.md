@@ -16,3 +16,18 @@ A valid solution is a sequence of cells $\pi_1, \pi_2, \dots, \pi_{N^2}$ satisfy
 3. Every cell of the grid appears exactly once (Hamiltonian path).
 4. Waypoints are visited in ascending order: if $\pi_a$ has label $k$ and $\pi_b$ has label $k+1$, then $a < b$.
 5. The path neither branches nor crosses itself (implied by Hamiltonian).
+
+## Visualizer
+
+An interactive web visualizer lives at `src/zipmould/viz/` (FastAPI
+backend) and `viz-web/` (Vue 3 frontend). To run it locally:
+
+```bash
+uv sync --extra viz
+cd viz-web && bun install && bun run build
+uv run zipmould viz serve
+# Open http://127.0.0.1:8000
+```
+
+See `docs/superpowers/specs/2026-04-26-solver-visualizer-design.md` for
+the full design.
