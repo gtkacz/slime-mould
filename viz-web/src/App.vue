@@ -36,6 +36,9 @@
 
     <ControlBar />
     <ErrorToasts />
+    <div class="fixed bottom-2 left-2 z-10 pointer-events-none text-[10px] leading-none text-zinc-100/20">
+      v{{ appVersion }}
+    </div>
   </div>
 </template>
 
@@ -61,4 +64,5 @@ usePlaybackLoop()
 const traceStore = useTraceStore()
 const { trace, traceId } = storeToRefs(traceStore)
 const downloadUrl = computed(() => (traceId.value ? api.downloadTraceUrl(traceId.value) : '#'))
+const appVersion = __APP_VERSION__
 </script>

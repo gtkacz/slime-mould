@@ -459,7 +459,6 @@ const walkers = computed(() => replay.walkers.value)
 const walkerLabelSize = computed(() => Math.max(5, Math.min(14, cellSize.value * 0.1)))
 
 const walkerLegendItems = computed(() => [
-  { status: 'alive' as const, label: 'alive', color: palette.walkerAlive },
   { status: 'dead-end' as const, label: 'dead-end', color: palette.walkerDeadEnd },
   { status: 'complete' as const, label: 'complete', color: palette.walkerComplete },
 ])
