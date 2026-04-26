@@ -138,10 +138,10 @@ describe('GridCanvas', () => {
     await bestPath.trigger('pointerleave')
 
     const walker = wrapper.find('[data-layer="walkers"] .walker-marker')
-    expect(walker.attributes('aria-label')).toBe('Walker ID 0: alive')
+    expect(walker.attributes('aria-label')).toBe('Walker #0: alive')
     await walker.trigger('pointerenter')
     await wrapper.vm.$nextTick()
-    expect(document.body.textContent).toContain('Walker ID 0: alive')
+    expect(document.body.textContent).toContain('Walker #0: alive')
     await walker.trigger('pointerleave')
 
     const waypoint = wrapper.find('[data-layer="waypoints"] .waypoint-marker')

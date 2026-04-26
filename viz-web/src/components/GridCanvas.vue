@@ -40,11 +40,24 @@
         stroke-width="0.95"
         class="pheromone-cell"
         :aria-label="pheromoneTooltip(i)"
-        @pointerenter="showPointerTooltip($event, pheromoneTooltip(i))"
+        @pointerenter="showPheromoneTooltip($event, i)"
         @pointermove="movePointerTooltip($event)"
-        @pointerleave="hideTooltip"
+        @pointerleave="clearPheromoneHover"
       />
     </g>
+    <rect
+      v-if="hoveredPheromoneCell !== null"
+      data-layer="pheromone-hover"
+      :x="((hoveredPheromoneCell % trace.header.N) * cellSize)"
+      :y="(Math.floor(hoveredPheromoneCell / trace.header.N) * cellSize)"
+      :width="cellSize"
+      :height="cellSize"
+      :fill="cells[hoveredPheromoneCell]"
+      stroke="#f8fafc"
+      stroke-width="2"
+      class="pheromone-hover-cell"
+      pointer-events="none"
+    />
     <g data-layer="blocked">
       <rect
         v-for="(cell, i) in trace.header.blocked"
@@ -253,6 +266,7 @@ const reference = ref<TooltipReference | null>(null)
 const floating = ref<HTMLElement | null>(null)
 const pointerX = ref(0)
 const pointerY = ref(0)
+const hoveredPheromoneCell = ref<number | null>(null)
 
 const { floatingStyles, update } = useFloating(reference, floating, {
   placement: 'top',
@@ -277,12 +291,12 @@ const walkerLegend = {
 const palette = {
   wall: '#ff3f14',
   bestPath: '#ae43ff',
-  bestPathSolved: '#14b85a',
-  bestPathUnsolved: '#f43f5e',
+  bestPathSolved: '#00883b',
+  bestPathUnsolved: '#f32525',
   waypoint: '#c084fc',
   waypointText: '#f5f3ff',
   walkerAlive: '#22c55e',
-  walkerDeadEnd: '#008020',
+  walkerDeadEnd: '#808000',
   walkerComplete: '#00e755',
 } as const
 
@@ -397,7 +411,7 @@ const bestPathTooltip = computed(() => {
 })
 
 function walkerTooltip(walker: WalkerSnapshot): string {
-  return `Walker ID ${walker.id}: ${walker.status}`
+  return `Walker #${walker.id}: ${walker.status}`
 }
 
 function setPointerReference(event: PointerEvent): void {
@@ -415,6 +429,11 @@ function showPointerTooltip(event: PointerEvent, text: string): void {
   void nextTick(update)
 }
 
+function showPheromoneTooltip(event: PointerEvent, index: number): void {
+  hoveredPheromoneCell.value = index
+  showPointerTooltip(event, pheromoneTooltip(index))
+}
+
 function movePointerTooltip(event: PointerEvent): void {
   if (!tooltipOpen.value) return
   setPointerReference(event)
@@ -423,6 +442,11 @@ function movePointerTooltip(event: PointerEvent): void {
 
 function hideTooltip(): void {
   tooltipOpen.value = false
+}
+
+function clearPheromoneHover(): void {
+  hoveredPheromoneCell.value = null
+  hideTooltip()
 }
 
 const bestPathPoints = computed(() =>
@@ -469,7 +493,8 @@ function formatLegendValue(value: number): string {
 .best-path-line,
 .walker-marker circle,
 .waypoint-marker-halo,
-.waypoint-marker-ring {
+.waypoint-marker-ring,
+.pheromone-hover-cell {
   transition:
     opacity 120ms ease,
     stroke-width 120ms ease,
@@ -477,7 +502,7 @@ function formatLegendValue(value: number): string {
     transform 120ms ease;
 }
 
-.pheromone-cell:hover {
+.pheromone-hover-cell {
   stroke: #f8fafc;
   stroke-width: 2;
   filter: brightness(1.22);
@@ -486,11 +511,13 @@ function formatLegendValue(value: number): string {
 .wall-stroke:hover,
 .best-path-line:hover {
   filter: brightness(1.2);
+  opacity: 100%;
   stroke-width: 7;
 }
 
 .walker-marker:hover circle {
   filter: brightness(1.25);
+  opacity: 100%;
   transform: scale(1.25);
 }
 

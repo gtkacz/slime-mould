@@ -9,7 +9,7 @@
       <dt class="text-zinc-500">iterations</dt>
       <dd class="tabular-nums">{{ trace.footer.iterations_used }}</dd>
       <dt class="text-zinc-500">wall clock</dt>
-      <dd class="tabular-nums">{{ trace.footer.wall_clock_s }}</dd>
+      <dd class="tabular-nums">{{ Math.round((trace.footer.wall_clock_s * Math.pow(10, 5)) * (1 + Number.EPSILON)) / Math.pow(10, 5) }}</dd>
       <dt class="text-zinc-500">best fitness</dt>
       <dd class="tabular-nums">{{ trace.footer.best_fitness.toFixed(3) }}</dd>
     </dl>
