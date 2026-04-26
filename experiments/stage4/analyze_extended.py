@@ -186,9 +186,7 @@ def main(out_dir: Path = Path("experiments/stage4/out")) -> None:
             candidate=CANDIDATE,
         ),
         "secondary_asymmetric_puzzles": {
-            b: asymmetric_puzzles(df, baseline=b, candidate=CANDIDATE)
-            for b in baselines
-            if b != strongest
+            b: asymmetric_puzzles(df, baseline=b, candidate=CANDIDATE) for b in baselines if b != strongest
         },
         "efficiency_vs_strongest": efficiency_compare(
             df,

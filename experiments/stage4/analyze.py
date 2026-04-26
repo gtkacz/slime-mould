@@ -49,9 +49,7 @@ def main(out_dir: Path = Path("experiments/stage4/out")) -> None:
     strongest_baseline = max(BASELINES, key=lambda b: counts[b])
 
     primary = mcnemar_paired(df, baseline=strongest_baseline, candidate=CANDIDATE)
-    secondary = [
-        mcnemar_paired(df, baseline=b, candidate=CANDIDATE) for b in BASELINES if b != strongest_baseline
-    ]
+    secondary = [mcnemar_paired(df, baseline=b, candidate=CANDIDATE) for b in BASELINES if b != strongest_baseline]
 
     report: dict[str, Any] = {
         "by_condition_solve_counts": counts,
