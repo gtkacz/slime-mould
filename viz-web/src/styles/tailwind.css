@@ -1,10 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap');
+
 @import "tailwindcss";
 
 @theme {
   --font-sans:
-    "Space Grotesk", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Quantico", "Space Grotesk", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: "Cinzel", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --text-xs: 0.8725rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.03125rem;
 }
 
 html,

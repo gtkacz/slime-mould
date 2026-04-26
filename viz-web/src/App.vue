@@ -34,11 +34,11 @@
       </aside>
     </div>
 
-    <ControlBar />
-    <ErrorToasts />
-    <div class="fixed bottom-2 left-2 z-10 pointer-events-none text-[10px] leading-none text-zinc-100/20">
+    <div class="left-2 z-10 pointer-events-none text-[10px] leading-none text-zinc-100/20" style="margin: 0ch 0ch 1ch 1ch;">
       v{{ appVersion }}
     </div>
+    <ControlBar />
+    <ErrorToasts />
   </div>
 </template>
 
