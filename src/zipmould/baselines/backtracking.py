@@ -151,7 +151,7 @@ def solve(  # noqa: PLR0912, PLR0915
         if depth > best_len:
             best_len = depth
             best_path = path[:depth].copy()
-        if depth == L and seg == K:
+        if depth == L and seg == K and int(path[depth - 1]) == int(waypoint_cells[K - 1]):
             solved = True
             break
         if nb_i >= n_slots:
@@ -175,6 +175,12 @@ def solve(  # noqa: PLR0912, PLR0915
             continue
         w_of = int(waypoint_of[nb])
         if w_of > 0 and w_of != seg + 1:
+            stack_iter[-1] += 1
+            continue
+        # Entering the final waypoint with cells still unvisited is unrecoverable:
+        # the path must terminate at it, but a non-final cell can only be reached
+        # by moving away, which would require revisiting it.
+        if w_of == K and depth + 1 < L:
             stack_iter[-1] += 1
             continue
         new_seg = seg + 1 if w_of == seg + 1 else seg

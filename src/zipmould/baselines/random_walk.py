@@ -4,7 +4,8 @@ This is the weakest baseline in the design.md ablation grid.  At each
 step we enumerate legal neighbours (in-bounds, not blocked, not visited,
 respecting wall constraints, and respecting waypoint ordering) and pick
 one uniformly at random.  We declare success only when the walker has
-covered exactly L cells in the correct waypoint order.
+covered exactly L cells in the correct waypoint order and terminates on
+the last waypoint.
 """
 
 from __future__ import annotations
@@ -121,7 +122,7 @@ def solve(  # noqa: PLR0915
             best_len = path_len
             best_segment = segment
             best_path = path.copy()
-        if path_len == L and segment == K:
+        if path_len == L and segment == K and int(path[path_len - 1]) == int(waypoint_cells[K - 1]):
             solved = True
             break
 

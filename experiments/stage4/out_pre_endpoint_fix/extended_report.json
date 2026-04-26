@@ -15,15 +15,15 @@
   "candidate": "tuned-winner",
   "efficiency_vs_strongest": {
     "iters_diff_quartiles": [
-      -71074.25,
-      -3520.0,
-      -709.75
+      -68992.0,
+      -2944.5,
+      -536.5
     ],
     "n_pairs": 1080,
     "wall_ms_diff_quartiles": [
-      -570.5099560002509,
-      -24.602008500096417,
-      -1.943228500749683
+      -563.0021075030527,
+      -26.540900998952566,
+      -1.9220537524233805
     ]
   },
   "primary_bootstrap_diff": {
