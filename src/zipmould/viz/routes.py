@@ -4,16 +4,20 @@ from __future__ import annotations
 
 import tomllib
 import uuid
+from http import HTTPStatus
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _get_version
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request
+import cbor2
+from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi.responses import Response
 
 from zipmould.io.puzzles import load_corpus
 from zipmould.viz.runner import RunnerError, run_solve
 from zipmould.viz.schemas import ALLOWED_VARIANTS, PuzzleSummary, RunRequest, RunResponse, VariantSummary
+from zipmould.viz.trace_codec import read_cbor_bytes, trace_to_jsonable
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _CONFIG_DIR = _REPO_ROOT / "configs" / "ablations"
@@ -90,3 +94,29 @@ def post_run(req: RunRequest, request: Request) -> RunResponse:
     trace_id = uuid.uuid4().hex
     request.app.state.trace_cache.put(trace_id, cbor_bytes)
     return RunResponse(trace_id=trace_id, trace=trace_dict)
+
+
+@router.post("/traces/upload", response_model=RunResponse)
+async def upload_trace(file: UploadFile, request: Request) -> RunResponse:
+    raw = await file.read()
+    try:
+        trace = read_cbor_bytes(raw)
+    except (cbor2.CBORDecodeError, KeyError, TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=HTTPStatus.UNPROCESSABLE_ENTITY.value,
+            detail={"kind": "invalid_cbor", "detail": str(exc)},
+        ) from exc
+    trace_id = uuid.uuid4().hex
+    request.app.state.trace_cache.put(trace_id, raw)
+    return RunResponse(trace_id=trace_id, trace=trace_to_jsonable(trace))
+
+
+@router.get("/traces/{trace_id}.cbor")
+def download_trace(trace_id: str, request: Request) -> Response:
+    raw = request.app.state.trace_cache.get(trace_id)
+    if raw is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND.value,
+            detail={"kind": "trace_not_found", "detail": trace_id},
+        )
+    return Response(content=raw, media_type="application/cbor")
