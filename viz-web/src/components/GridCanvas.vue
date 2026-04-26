@@ -75,7 +75,7 @@
         :y1="wallLine(w).y1"
         :x2="wallLine(w).x2"
         :y2="wallLine(w).y2"
-        stroke="#facc15"
+        :stroke="palette.wall"
         stroke-width="2.5"
         stroke-linecap="round"
         vector-effect="non-scaling-stroke"
@@ -86,7 +86,7 @@
       <polyline
         :points="bestPathPoints"
         fill="none"
-        stroke="#fafafa"
+        :stroke="palette.bestPath"
         stroke-width="3"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -113,14 +113,14 @@
         <circle
           class="waypoint-marker-halo"
           :r="cellSize * 0.34"
-          fill="#facc15"
-          opacity="0.16"
+          :fill="palette.waypoint"
+          opacity="0.18"
         />
         <circle
           class="waypoint-marker-ring"
           :r="cellSize * 0.24"
           fill="#27272a"
-          stroke="#facc15"
+          :stroke="palette.waypoint"
           :stroke-width="cellSize * 0.045"
         />
         <text
@@ -128,7 +128,7 @@
           dominant-baseline="central"
           :font-size="cellSize * 0.25"
           font-weight="800"
-          fill="#fefce8"
+          :fill="palette.waypointText"
         >
           {{ i + 1 }}
         </text>
@@ -153,6 +153,16 @@ const { layers, index } = storeToRefs(playback)
 const replay = useTraceReplay(trace, index)
 
 const size = 480
+const palette = {
+  wall: '#f97316',
+  bestPath: '#fb7185',
+  waypoint: '#a78bfa',
+  waypointText: '#f5f3ff',
+  walkerAlive: '#22c55e',
+  walkerDeadEnd: '#84cc16',
+  walkerComplete: '#14b8a6',
+} as const
+
 const cellSize = computed(() => (trace.value ? size / trace.value.header.N : 0))
 const baseCells = computed(() => {
   const n = trace.value?.header.N ?? 0
@@ -184,12 +194,11 @@ function blockedHatchPath(cell: [number, number]): string {
   return `M ${x} ${y} L ${x + cs} ${y + cs} M ${x + cs} ${y} L ${x} ${y + cs}`
 }
 
-function viridis(t: number): string {
+function pheromoneColor(t: number): string {
   const u = Math.min(1, Math.max(0, t))
-  const r = Math.round(255 * (0.267 + 1.084 * u - 0.351 * u * u))
-  const g = Math.round(255 * (0.005 + 1.404 * u - 0.471 * u * u))
-  const b = Math.round(255 * (0.329 + 0.718 * u - 0.851 * u * u))
-  return `rgb(${r},${g},${b})`
+  const hue = Math.round(238 - 34 * u)
+  const lightness = Math.round(18 + 40 * u)
+  return `hsl(${hue} 88% ${lightness}%)`
 }
 
 const cells = computed<string[]>(() => {
@@ -218,7 +227,7 @@ const cells = computed<string[]>(() => {
   const out = new Array<string>(cellCount)
   for (let c = 0; c < cellCount; c++) {
     const avg = counts[c]! > 0 ? sums[c]! / counts[c]! : 0
-    out[c] = viridis((avg - tauMin) / span)
+    out[c] = pheromoneColor((avg - tauMin) / span)
   }
   return out
 })
@@ -232,9 +241,9 @@ const bestPathPoints = computed(() =>
 const walkers = computed(() => replay.walkers.value)
 
 function walkerColor(status: WalkerStatus): string {
-  if (status === 'alive') return '#34d399'
-  if (status === 'dead-end') return '#f87171'
-  return '#60a5fa'
+  if (status === 'alive') return palette.walkerAlive
+  if (status === 'dead-end') return palette.walkerDeadEnd
+  return palette.walkerComplete
 }
 </script>
 

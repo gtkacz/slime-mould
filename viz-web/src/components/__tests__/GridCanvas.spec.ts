@@ -127,7 +127,7 @@ describe('GridCanvas', () => {
       y1: '0',
       x2: '240',
       y2: '240',
-      stroke: '#facc15',
+      stroke: '#f97316',
       'stroke-width': '2.5',
       'vector-effect': 'non-scaling-stroke',
     })
@@ -136,7 +136,7 @@ describe('GridCanvas', () => {
       y1: '240',
       x2: '240',
       y2: '240',
-      stroke: '#facc15',
+      stroke: '#f97316',
       'stroke-width': '2.5',
       'vector-effect': 'non-scaling-stroke',
     })
@@ -183,16 +183,35 @@ describe('GridCanvas', () => {
     const ring = markers[0]?.find('.waypoint-marker-ring')
     expect(Number(halo?.attributes('r'))).toBeCloseTo(81.6)
     expect(halo?.attributes()).toMatchObject({
-      fill: '#facc15',
-      opacity: '0.16',
+      fill: '#a78bfa',
+      opacity: '0.18',
     })
     expect(Number(ring?.attributes('r'))).toBeCloseTo(57.6)
     expect(Number(ring?.attributes('stroke-width'))).toBeCloseTo(10.8)
     expect(ring?.attributes()).toMatchObject({
       fill: '#27272a',
-      stroke: '#facc15',
+      stroke: '#a78bfa',
     })
     expect(markers[0]?.find('text').text()).toBe('1')
     expect(markers[1]?.find('text').text()).toBe('2')
+  })
+
+  it('keeps major overlay categories on separate hue ranges', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', tinyTrace)
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-layer="pheromone"] rect').attributes('fill')).toBe(
+      'hsl(221 88% 38%)',
+    )
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#fb7185')
+    expect(wrapper.find('[data-layer="waypoints"] .waypoint-marker-ring').attributes('stroke')).toBe(
+      '#a78bfa',
+    )
+    expect(wrapper.find('[data-layer="walkers"] circle').attributes('fill')).toBe('#22c55e')
   })
 })
