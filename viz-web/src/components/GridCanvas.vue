@@ -95,14 +95,13 @@
         class="walker-marker"
         :transform="`translate(${cellCenterX(w.cell)} ${cellCenterY(w.cell)})`"
       >
-        <circle :r="cellSize * 0.2" :fill="walkerColor(w.status)" />
+        <circle :r="cellSize * 0.125" :fill="walkerColor(w.status)" />
         <text
           text-anchor="middle"
           dominant-baseline="central"
           :font-size="walkerLabelSize"
           font-weight="800"
           :fill="walkerLabelColor(w.status)"
-          fill-opacity="0.1"
         >
           {{ w.id }}
         </text>
@@ -231,7 +230,7 @@ const palette = {
   waypoint: '#c084fc',
   waypointText: '#f5f3ff',
   walkerAlive: '#22c55e',
-  walkerDeadEnd: '#1c2a21',
+  walkerDeadEnd: '#008020',
   walkerComplete: '#00e755',
 } as const
 
@@ -316,10 +315,9 @@ const bestPathPoints = computed(() =>
 )
 
 const walkers = computed(() => replay.walkers.value)
-const walkerLabelSize = computed(() => Math.max(5, Math.min(14, cellSize.value * 0.18)))
+const walkerLabelSize = computed(() => Math.max(5, Math.min(14, cellSize.value * 0.1)))
 
 const walkerLegendItems = computed(() => [
-  { status: 'alive' as const, label: 'alive', color: palette.walkerAlive },
   { status: 'dead-end' as const, label: 'dead-end', color: palette.walkerDeadEnd },
   { status: 'complete' as const, label: 'complete', color: palette.walkerComplete },
 ])
@@ -331,7 +329,7 @@ function walkerColor(status: WalkerStatus): string {
 }
 
 function walkerLabelColor(status: WalkerStatus): string {
-  return status === 'dead-end' ? '#e4e4e7' : '#64ee9e'
+  return status === 'dead-end' ? '#00de38' : '#64ee9e'
 }
 
 function formatLegendValue(value: number): string {
