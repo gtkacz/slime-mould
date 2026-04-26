@@ -96,6 +96,61 @@ describe('GridCanvas', () => {
     expect(marker.find('text').text()).toBe('0')
   })
 
+  it('adds grid item tooltips for visible overlays', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', {
+      ...tinyTrace,
+      header: {
+        ...tinyTrace.header,
+        walls: [
+          [
+            [0, 0],
+            [0, 1],
+          ],
+        ],
+      },
+    })
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    const pheromone = wrapper.find('[data-layer="pheromone"] rect')
+    expect(pheromone.attributes('aria-label')).toBe('Pheromone at (0, 0): 0')
+    await pheromone.trigger('pointerenter')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Pheromone at (0, 0): 0')
+    await pheromone.trigger('pointerleave')
+
+    const wall = wrapper.find('[data-layer="walls"] line')
+    expect(wall.attributes('aria-label')).toBe('Wall')
+    await wall.trigger('pointerenter')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Wall')
+    await wall.trigger('pointerleave')
+
+    const bestPath = wrapper.find('[data-layer="best-path"] polyline')
+    expect(bestPath.attributes('aria-label')).toBe('Best path: solver did not succeed')
+    await bestPath.trigger('pointerenter')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Best path: solver did not succeed')
+    await bestPath.trigger('pointerleave')
+
+    const walker = wrapper.find('[data-layer="walkers"] .walker-marker')
+    expect(walker.attributes('aria-label')).toBe('Walker ID 0: alive')
+    await walker.trigger('pointerenter')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Walker ID 0: alive')
+    await walker.trigger('pointerleave')
+
+    const waypoint = wrapper.find('[data-layer="waypoints"] .waypoint-marker')
+    expect(waypoint.attributes('aria-label')).toBe('Waypoint 1')
+    await waypoint.trigger('pointerenter')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Waypoint 1')
+  })
+
   it('renders walls on the boundary between adjacent cells', async () => {
     const traceStore = useTraceStore()
     const playback = usePlaybackStore()
@@ -219,7 +274,7 @@ describe('GridCanvas', () => {
     expect(wrapper.find('[data-layer="pheromone"] rect').attributes('fill')).toBe(
       'hsl(173 88% 38%)',
     )
-    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#ae43ff')
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#f43f5e')
     expect(wrapper.find('[data-layer="waypoints"] .waypoint-marker-ring').attributes('stroke')).toBe(
       '#c084fc',
     )
@@ -273,8 +328,62 @@ describe('GridCanvas', () => {
     expect(legend.text()).toContain('complete')
     expect(legend.findAll('circle').map((circle) => circle.attributes('fill'))).toEqual([
       '#22c55e',
-      '#1c2a21',
+      '#008020',
       '#00e755',
     ])
+  })
+
+  it('uses the default best path color before the final frame', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', {
+      ...tinyTrace,
+      frames: [
+        tinyTrace.frames[0]!,
+        {
+          ...tinyTrace.frames[0]!,
+          t: 1,
+          best: {
+            path: [
+              [0, 0],
+              [0, 1],
+            ],
+            fitness: 1,
+          },
+        },
+      ],
+    })
+    playback.setTotal(2)
+    playback.seek(0)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#ae43ff')
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('aria-label')).toBe(
+      'Best path',
+    )
+  })
+
+  it('colors the final best path by solver outcome', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    const solvedTrace = {
+      ...tinyTrace,
+      footer: {
+        ...tinyTrace.footer,
+        solved: true,
+      },
+    }
+    traceStore.set('id', solvedTrace)
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#14b85a')
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('aria-label')).toBe(
+      'Best path: solver succeeded',
+    )
   })
 })

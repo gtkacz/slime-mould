@@ -38,6 +38,11 @@
         fill-opacity="1"
         stroke="#3f3f46"
         stroke-width="0.95"
+        class="pheromone-cell"
+        :aria-label="pheromoneTooltip(i)"
+        @pointerenter="showPointerTooltip($event, pheromoneTooltip(i))"
+        @pointermove="movePointerTooltip($event)"
+        @pointerleave="hideTooltip"
       />
     </g>
     <g data-layer="blocked">
@@ -75,17 +80,26 @@
         stroke-linecap="round"
         vector-effect="non-scaling-stroke"
         class="wall-stroke wall-stroke-core"
+        aria-label="Wall"
+        @pointerenter="showPointerTooltip($event, 'Wall')"
+        @pointermove="movePointerTooltip($event)"
+        @pointerleave="hideTooltip"
       />
     </g>
     <g v-if="layers.bestPath" data-layer="best-path">
       <polyline
         :points="bestPathPoints"
         fill="none"
-        :stroke="palette.bestPath"
+        :stroke="bestPathStroke"
         stroke-width="5"
         stroke-linecap="round"
         stroke-linejoin="round"
         opacity="0.85"
+        class="best-path-line"
+        :aria-label="bestPathTooltip"
+        @pointerenter="showPointerTooltip($event, bestPathTooltip)"
+        @pointermove="movePointerTooltip($event)"
+        @pointerleave="hideTooltip"
       />
     </g>
     <g v-if="layers.walkers" data-layer="walkers">
@@ -94,6 +108,10 @@
         :key="`w-${w.id}`"
         class="walker-marker"
         :transform="`translate(${cellCenterX(w.cell)} ${cellCenterY(w.cell)})`"
+        :aria-label="walkerTooltip(w)"
+        @pointerenter="showPointerTooltip($event, walkerTooltip(w))"
+        @pointermove="movePointerTooltip($event)"
+        @pointerleave="hideTooltip"
       >
         <circle :r="cellSize * 0.125" :fill="walkerColor(w.status)" />
         <text
@@ -113,6 +131,10 @@
         :key="`wp-${i}`"
         class="waypoint-marker"
         :transform="`translate(${cellCenterX(wp)} ${cellCenterY(wp)})`"
+        :aria-label="waypointTooltip(i)"
+        @pointerenter="showPointerTooltip($event, waypointTooltip(i))"
+        @pointermove="movePointerTooltip($event)"
+        @pointerleave="hideTooltip"
       >
         <circle
           class="waypoint-marker-halo"
@@ -193,15 +215,27 @@
       </g>
     </g>
   </svg>
+  <Teleport to="body">
+    <div
+      v-if="tooltipOpen"
+      ref="floating"
+      role="tooltip"
+      class="z-50 max-w-64 rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-xs leading-snug text-zinc-100 shadow"
+      :style="floatingStyles"
+    >
+      {{ tooltipText }}
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
+import { computed, nextTick, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTraceStore } from '../stores/trace'
 import { usePlaybackStore } from '../stores/playback'
 import { useTraceReplay } from '../composables/useTraceReplay'
-import type { TraceWall, WalkerStatus } from '../api/types'
+import type { TraceWall, WalkerSnapshot, WalkerStatus } from '../api/types'
 
 const traceStore = useTraceStore()
 const playback = usePlaybackStore()
@@ -209,6 +243,22 @@ const { trace } = storeToRefs(traceStore)
 const { layers, index } = storeToRefs(playback)
 
 const replay = useTraceReplay(trace, index)
+type TooltipReference = {
+  getBoundingClientRect: () => DOMRect
+}
+
+const tooltipOpen = ref(false)
+const tooltipText = ref('')
+const reference = ref<TooltipReference | null>(null)
+const floating = ref<HTMLElement | null>(null)
+const pointerX = ref(0)
+const pointerY = ref(0)
+
+const { floatingStyles, update } = useFloating(reference, floating, {
+  placement: 'top',
+  whileElementsMounted: autoUpdate,
+  middleware: [offset(12), flip(), shift({ padding: 8 })],
+})
 
 const size = 480
 const canvasHeight = size + 74
@@ -227,6 +277,8 @@ const walkerLegend = {
 const palette = {
   wall: '#ff3f14',
   bestPath: '#ae43ff',
+  bestPathSolved: '#14b85a',
+  bestPathUnsolved: '#f43f5e',
   waypoint: '#c084fc',
   waypointText: '#f5f3ff',
   walkerAlive: '#22c55e',
@@ -279,10 +331,9 @@ function pheromoneColor(t: number): string {
   return `hsl(${hue} 88% ${lightness}%)`
 }
 
-const cells = computed<string[]>(() => {
+const cellPheromones = computed<number[]>(() => {
   const t = trace.value
   if (!t) return []
-  const { min: tauMin, max: tauMax } = tauBounds.value
   const N = t.header.N
   const cellCount = N * N
   const tau = replay.tau.value
@@ -299,14 +350,80 @@ const cells = computed<string[]>(() => {
     sums[cell]! += tau[i] ?? 0
     counts[cell]! += 1
   }
-  const span = Math.max(1e-9, tauMax - tauMin)
-  const out = new Array<string>(cellCount)
+  const out = new Array<number>(cellCount)
   for (let c = 0; c < cellCount; c++) {
     const avg = counts[c]! > 0 ? sums[c]! / counts[c]! : 0
-    out[c] = pheromoneColor((avg - tauMin) / span)
+    out[c] = avg
   }
   return out
 })
+
+const cells = computed<string[]>(() => {
+  const { min: tauMin, max: tauMax } = tauBounds.value
+  const span = Math.max(1e-9, tauMax - tauMin)
+  return cellPheromones.value.map((value) => pheromoneColor((value - tauMin) / span))
+})
+
+function pheromoneTooltip(index: number): string {
+  const n = trace.value?.header.N ?? 0
+  const row = n > 0 ? Math.floor(index / n) : 0
+  const col = n > 0 ? index % n : 0
+  return `Pheromone at (${row}, ${col}): ${formatPheromoneValue(cellPheromones.value[index] ?? 0)}`
+}
+
+function waypointTooltip(index: number): string {
+  return `Waypoint ${index + 1}`
+}
+
+function formatPheromoneValue(value: number): string {
+  if (Number.isInteger(value)) return value.toString()
+  const rounded = value.toFixed(4)
+  return rounded.replace(/\.?0+$/, '')
+}
+
+const isLastFrame = computed(() => {
+  const frameCount = trace.value?.frames.length ?? 0
+  return frameCount > 0 && index.value === frameCount - 1
+})
+
+const bestPathStroke = computed(() => {
+  if (!isLastFrame.value) return palette.bestPath
+  return trace.value?.footer.solved ? palette.bestPathSolved : palette.bestPathUnsolved
+})
+
+const bestPathTooltip = computed(() => {
+  if (!isLastFrame.value) return 'Best path'
+  return trace.value?.footer.solved ? 'Best path: solver succeeded' : 'Best path: solver did not succeed'
+})
+
+function walkerTooltip(walker: WalkerSnapshot): string {
+  return `Walker ID ${walker.id}: ${walker.status}`
+}
+
+function setPointerReference(event: PointerEvent): void {
+  pointerX.value = event.clientX
+  pointerY.value = event.clientY
+  reference.value = {
+    getBoundingClientRect: () => new DOMRect(pointerX.value, pointerY.value, 0, 0),
+  }
+}
+
+function showPointerTooltip(event: PointerEvent, text: string): void {
+  tooltipText.value = text
+  setPointerReference(event)
+  tooltipOpen.value = true
+  void nextTick(update)
+}
+
+function movePointerTooltip(event: PointerEvent): void {
+  if (!tooltipOpen.value) return
+  setPointerReference(event)
+  void update()
+}
+
+function hideTooltip(): void {
+  tooltipOpen.value = false
+}
 
 const bestPathPoints = computed(() =>
   replay.bestPath.value
@@ -318,6 +435,7 @@ const walkers = computed(() => replay.walkers.value)
 const walkerLabelSize = computed(() => Math.max(5, Math.min(14, cellSize.value * 0.1)))
 
 const walkerLegendItems = computed(() => [
+  { status: 'alive' as const, label: 'alive', color: palette.walkerAlive },
   { status: 'dead-end' as const, label: 'dead-end', color: palette.walkerDeadEnd },
   { status: 'complete' as const, label: 'complete', color: palette.walkerComplete },
 ])
@@ -338,6 +456,52 @@ function formatLegendValue(value: number): string {
 </script>
 
 <style scoped>
+.pheromone-cell,
+.wall-stroke,
+.best-path-line,
+.walker-marker,
+.waypoint-marker {
+  cursor: help;
+}
+
+.pheromone-cell,
+.wall-stroke,
+.best-path-line,
+.walker-marker circle,
+.waypoint-marker-halo,
+.waypoint-marker-ring {
+  transition:
+    opacity 120ms ease,
+    stroke-width 120ms ease,
+    filter 120ms ease,
+    transform 120ms ease;
+}
+
+.pheromone-cell:hover {
+  stroke: #f8fafc;
+  stroke-width: 2;
+  filter: brightness(1.22);
+}
+
+.wall-stroke:hover,
+.best-path-line:hover {
+  filter: brightness(1.2);
+  stroke-width: 7;
+}
+
+.walker-marker:hover circle {
+  filter: brightness(1.25);
+  transform: scale(1.25);
+}
+
+.waypoint-marker:hover .waypoint-marker-halo {
+  opacity: 0.32;
+}
+
+.waypoint-marker:hover .waypoint-marker-ring {
+  filter: brightness(1.2);
+}
+
 .waypoint-marker-ring {
   paint-order: stroke;
 }
