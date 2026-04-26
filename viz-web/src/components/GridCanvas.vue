@@ -35,8 +35,9 @@
         :width="cellSize"
         :height="cellSize"
         :fill="cells[i]"
+        fill-opacity="1"
         stroke="#3f3f46"
-        stroke-width="0.5"
+        stroke-width="0.95"
       />
     </g>
     <g data-layer="blocked">
@@ -70,7 +71,7 @@
         :x2="wallLine(w).x2"
         :y2="wallLine(w).y2"
         :stroke="palette.wall"
-        stroke-width="3"
+        stroke-width="5"
         stroke-linecap="round"
         vector-effect="non-scaling-stroke"
         class="wall-stroke wall-stroke-core"
@@ -81,7 +82,7 @@
         :points="bestPathPoints"
         fill="none"
         :stroke="palette.bestPath"
-        stroke-width="3"
+        stroke-width="5"
         stroke-linecap="round"
         stroke-linejoin="round"
         opacity="0.85"
@@ -184,13 +185,13 @@ const legend = {
 } as const
 
 const palette = {
-  wall: '#ef4444',
-  bestPath: '#bb48ec',
+  wall: '#ff3f14',
+  bestPath: '#ae43ff',
   waypoint: '#c084fc',
   waypointText: '#f5f3ff',
   walkerAlive: '#22c55e',
-  walkerDeadEnd: '#84cc16',
-  walkerComplete: '#14b8a6',
+  walkerDeadEnd: '#1c2a21',
+  walkerComplete: '#00e755',
 } as const
 
 const cellSize = computed(() => (trace.value ? size / trace.value.header.N : 0))
@@ -233,7 +234,7 @@ function blockedHatchPath(cell: [number, number]): string {
 
 function pheromoneColor(t: number): string {
   const u = Math.min(1, Math.max(0, t))
-  const hue = Math.round(238 - 34 * u)
+  const hue = Math.round(190 - 34 * u)
   const lightness = Math.round(18 + 40 * u)
   return `hsl(${hue} 88% ${lightness}%)`
 }
