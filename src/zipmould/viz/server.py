@@ -8,10 +8,11 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
+from zipmould.viz.routes import ZIPMOULD_VERSION
 from zipmould.viz.routes import router as api_router
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="ZipMould Visualizer", version="0.1.0")
+    app = FastAPI(title="ZipMould Visualizer", version=ZIPMOULD_VERSION)
     app.include_router(api_router)
     return app
