@@ -3,6 +3,9 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Visual brainstorming companion artifacts
+.superpowers/
+
 # C extensions
 *.so
 
