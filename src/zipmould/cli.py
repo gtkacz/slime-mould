@@ -23,6 +23,31 @@ from zipmould.logging_config import configure_logging
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
+_DEFAULT_VIZ_HOST = "127.0.0.1"
+_DEFAULT_VIZ_PORT = 8000
+
+viz_app = typer.Typer(no_args_is_help=True, help="Visualizer commands.")
+app.add_typer(viz_app, name="viz")
+
+
+@viz_app.command("serve")
+def viz_serve_cmd(
+    host: Annotated[str, typer.Option(help="Bind host.")] = _DEFAULT_VIZ_HOST,
+    port: Annotated[int, typer.Option(help="Bind port.")] = _DEFAULT_VIZ_PORT,
+    reload: Annotated[bool, typer.Option(help="Enable uvicorn auto-reload.")] = False,
+) -> None:
+    """Run the FastAPI visualizer server."""
+    import uvicorn
+
+    configure_logging()
+    uvicorn.run(
+        "zipmould.viz.server:create_app",
+        host=host,
+        port=port,
+        factory=True,
+        reload=reload,
+    )
+
 
 _CONDITION_TO_SOLVER: dict[str, str] = {
     "zipmould-uni-signed": "zipmould.solver.api:solve",
