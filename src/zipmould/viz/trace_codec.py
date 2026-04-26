@@ -17,8 +17,8 @@ from zipmould.io.trace import (
     Trace,
     TraceFooter,
     TraceHeader,
-    _frame_from_dict,
-    _trace_to_dict,
+    _frame_from_dict,  # pyright: ignore[reportPrivateUsage]
+    _trace_to_dict,  # pyright: ignore[reportPrivateUsage]
 )
 
 
