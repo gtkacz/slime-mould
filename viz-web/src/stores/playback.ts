@@ -5,6 +5,7 @@ export type LayerKey = 'walls' | 'pheromone' | 'walkers' | 'bestPath' | 'waypoin
 
 export const usePlaybackStore = defineStore('playback', () => {
   const MAX_SPEED = 1024
+  const MIN_SPEED = 0.05
   const index = ref(0)
   const total = ref(0)
   const playing = ref(false)
@@ -39,11 +40,11 @@ export const usePlaybackStore = defineStore('playback', () => {
   }
 
   function setSpeed(v: number): void {
-    if (!Number.isFinite(v) || v < 1) {
-      speed.value = 1
+    if (!Number.isFinite(v) || v < MIN_SPEED) {
+      speed.value = MIN_SPEED
       return
     }
-    speed.value = Math.min(Math.floor(v), MAX_SPEED)
+    speed.value = Math.min(v, MAX_SPEED)
   }
 
   function toggleLayer(key: LayerKey): void {
@@ -52,6 +53,7 @@ export const usePlaybackStore = defineStore('playback', () => {
 
   return {
     MAX_SPEED,
+    MIN_SPEED,
     index,
     total,
     playing,

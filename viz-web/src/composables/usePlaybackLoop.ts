@@ -5,19 +5,32 @@ export function usePlaybackLoop() {
   const store = usePlaybackStore()
   let raf = 0
   let active = true
+  // Carries fractional speed across ticks so sub-1× rates advance every N frames.
+  let accumulator = 0
+
+  function advance(): void {
+    if (!store.playing) {
+      accumulator = 0
+      return
+    }
+    accumulator += store.speed
+    const stepBy = Math.floor(accumulator)
+    if (stepBy <= 0) return
+    accumulator -= stepBy
+    const next = store.index + stepBy
+    const last = Math.max(0, store.total - 1)
+    if (next >= last) {
+      store.seek(last)
+      if (store.playing) store.togglePlay()
+      accumulator = 0
+    } else {
+      store.seek(next)
+    }
+  }
 
   function tick(): void {
     if (!active) return
-    if (store.playing) {
-      const next = store.index + store.speed
-      const last = Math.max(0, store.total - 1)
-      if (next >= last) {
-        store.seek(last)
-        if (store.playing) store.togglePlay()
-      } else {
-        store.seek(next)
-      }
-    }
+    advance()
     raf = requestAnimationFrame(tick)
   }
 
@@ -32,15 +45,7 @@ export function usePlaybackLoop() {
 
   return {
     _tickForTesting(): void {
-      if (!store.playing) return
-      const next = store.index + store.speed
-      const last = Math.max(0, store.total - 1)
-      if (next >= last) {
-        store.seek(last)
-        if (store.playing) store.togglePlay()
-      } else {
-        store.seek(next)
-      }
+      advance()
     },
   }
 }
