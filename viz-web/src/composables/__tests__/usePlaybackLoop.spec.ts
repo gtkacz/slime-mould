@@ -38,4 +38,17 @@ describe('usePlaybackLoop', () => {
     loop._tickForTesting()
     expect(store.index).toBe(0)
   })
+
+  it('treats speed as frames per second', () => {
+    const store = usePlaybackStore()
+    store.setTotal(10)
+    store.setSpeed(0.05)
+    const loop = usePlaybackLoop()
+
+    store.togglePlay()
+    loop._tickForTesting(10_000)
+    expect(store.index).toBe(0)
+    loop._tickForTesting(10_000)
+    expect(store.index).toBe(1)
+  })
 })

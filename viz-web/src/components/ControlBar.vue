@@ -58,11 +58,11 @@
       data-test="speed-custom"
       type="number"
       aria-label="Custom playback speed"
-      title="Custom playback speed (frames per tick)"
+      title="Custom playback speed (frames per second)"
       class="bg-zinc-700 px-2 py-1 rounded text-xs w-20 tabular-nums"
       :min="store.MIN_SPEED"
       :max="store.MAX_SPEED"
-      step="0.05"
+      step="0.001"
       :value="speedDisplay"
       @change="onCustom"
     />
@@ -85,14 +85,14 @@ interface SpeedPreset {
 const store = usePlaybackStore()
 
 const presets: readonly SpeedPreset[] = [
-  { label: '0.25×', value: 0.25 },
-  { label: '0.5×', value: 0.5 },
-  { label: '1×', value: 1 },
-  { label: '2×', value: 2 },
-  { label: '4×', value: 4 },
-  { label: '8×', value: 8 },
-  { label: '16×', value: 16 },
-  { label: '64× (max)', value: 64 },
+  { label: '0.001 fps', value: 0.001 },
+  { label: '0.005 fps', value: 0.005 },
+  { label: '0.01 fps', value: 0.01 },
+  { label: '0.05 fps', value: 0.05 },
+  { label: '0.25 fps', value: 0.25 },
+  { label: '1 fps', value: 1 },
+  { label: '4 fps', value: 4 },
+  { label: '16 fps', value: 16 },
 ]
 
 const presetValue = computed<string>(() => {
@@ -102,7 +102,7 @@ const presetValue = computed<string>(() => {
 
 const speedDisplay = computed<string>(() => {
   const v = store.speed
-  return Number.isInteger(v) ? String(v) : v.toFixed(2)
+  return Number.isInteger(v) ? String(v) : String(Number(v.toFixed(3)))
 })
 
 function onScrub(e: Event): void {

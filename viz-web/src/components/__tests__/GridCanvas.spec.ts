@@ -55,6 +55,7 @@ describe('GridCanvas', () => {
     const wrapper = mount(GridCanvas)
     await wrapper.vm.$nextTick()
     expect(wrapper.find('svg').exists()).toBe(true)
+    expect(wrapper.find('[data-layer="cells"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="walls"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="blocked"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="pheromone"]').exists()).toBe(true)
@@ -74,6 +75,7 @@ describe('GridCanvas', () => {
     playback.toggleLayer('pheromone')
     await wrapper.vm.$nextTick()
     expect(wrapper.find('[data-layer="pheromone"]').exists()).toBe(false)
+    expect(wrapper.find('[data-layer="cells"]').exists()).toBe(true)
   })
 
   it('renders walls on the boundary between adjacent cells', async () => {

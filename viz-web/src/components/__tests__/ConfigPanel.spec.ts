@@ -68,9 +68,43 @@ describe('ConfigPanel', () => {
 
     const advanced = wrapper.find('details')
     expect(advanced.text()).toContain('α')
-    expect(advanced.text()).toContain('beta')
+    expect(advanced.text()).toContain('β')
+    expect(advanced.text()).toContain('Imax')
+    expect(advanced.text()).toContain('τmax')
+    expect(advanced.text()).toContain('ζ')
     expect(advanced.text()).not.toContain('alpha')
-    expect(advanced.find('.font-serif').text()).toBe('α')
+    expect(advanced.findAll('.font-serif')).toHaveLength(6)
+    expect(advanced.text()).not.toContain('Pheromone influence exponent')
+    await advanced.find('button[aria-label="alpha description"]').trigger('focus')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Pheromone influence exponent')
     expect(wrapper.findAll('input').map((input) => input.attributes('value'))).toContain('1')
+  })
+
+  it('shows descriptions for each algorithm variant', async () => {
+    const client = new ApiClient()
+    vi.spyOn(client, 'listPuzzles').mockResolvedValue([
+      { id: 'level_1', name: 'Lvl 1', difficulty: 'Easy', N: 2, K: 1 },
+    ])
+    vi.spyOn(client, 'listVariants').mockResolvedValue([
+      { name: 'zipmould-uni-positive', config_path: 'x', defaults: {} },
+      { name: 'zipmould-strat-signed', config_path: 'x', defaults: {} },
+    ])
+
+    const wrapper = mount(ConfigPanel, { props: { client } })
+    await new Promise((r) => setTimeout(r, 0))
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).not.toContain('Single shared pheromone field')
+    await wrapper
+      .find('button[aria-label="zipmould-uni-positive description"]')
+      .trigger('focus')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Single shared pheromone field')
+    await wrapper
+      .find('button[aria-label="zipmould-strat-signed description"]')
+      .trigger('focus')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Separate pheromone fields per waypoint segment')
   })
 })

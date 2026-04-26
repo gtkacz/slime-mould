@@ -6,6 +6,19 @@
     role="img"
     aria-label="Solver grid"
   >
+    <g data-layer="cells">
+      <rect
+        v-for="(_cell, i) in baseCells"
+        :key="`cell-${i}`"
+        :x="((i % trace.header.N) * cellSize)"
+        :y="(Math.floor(i / trace.header.N) * cellSize)"
+        :width="cellSize"
+        :height="cellSize"
+        fill="#18181b"
+        stroke="#3f3f46"
+        stroke-width="0.5"
+      />
+    </g>
     <g v-if="layers.pheromone" data-layer="pheromone">
       <rect
         v-for="(_value, i) in cells"
@@ -125,6 +138,10 @@ const replay = useTraceReplay(trace, index)
 
 const size = 480
 const cellSize = computed(() => (trace.value ? size / trace.value.header.N : 0))
+const baseCells = computed(() => {
+  const n = trace.value?.header.N ?? 0
+  return Array.from({ length: n * n })
+})
 
 const cellCenterX = (cell: [number, number]) => (cell[1] + 0.5) * cellSize.value
 const cellCenterY = (cell: [number, number]) => (cell[0] + 0.5) * cellSize.value

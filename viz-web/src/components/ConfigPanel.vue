@@ -9,12 +9,21 @@
         </option>
       </select>
     </label>
-    <label class="block">
-      <span class="text-xs">Variant</span>
-      <select v-model="run.variant" class="w-full bg-zinc-800 rounded px-2 py-1">
-        <option v-for="v in run.variants" :key="v.name" :value="v.name">{{ v.name }}</option>
-      </select>
-    </label>
+    <fieldset class="space-y-1">
+      <legend class="text-xs">Variant</legend>
+      <label
+        v-for="v in run.variants"
+        :key="v.name"
+        class="flex items-center gap-2 rounded bg-zinc-800 px-2 py-1 text-xs"
+      >
+        <input v-model="run.variant" type="radio" :value="v.name" />
+        <span class="flex-1">{{ v.name }}</span>
+        <HelpTooltip
+          :label="`${v.name} description`"
+          :text="variantDescription(v.name)"
+        />
+      </label>
+    </fieldset>
     <label class="block">
       <span class="text-xs">Seed</span>
       <input
@@ -28,16 +37,18 @@
     <details>
       <summary class="cursor-pointer text-xs text-zinc-400">Advanced</summary>
       <div class="mt-2 space-y-1">
-        <div v-for="key in advancedKeys" :key="key" class="flex items-center gap-2">
-          <span class="text-xs w-32">
-            <span :class="{ 'font-serif': advancedLabel(key).math }">
-              {{ advancedLabel(key).text }}
-            </span>
-          </span>
+        <div
+          v-for="param in advancedParams"
+          :key="param.key"
+          class="grid grid-cols-[2rem_1rem_minmax(0,1fr)] items-center gap-2"
+        >
+          <span class="font-serif text-sm leading-none" v-html="param.symbol"></span>
+          <HelpTooltip :label="`${param.name} description`" :text="param.description" />
           <input
-            class="flex-1 bg-zinc-800 rounded px-2 py-1 text-xs"
-            :value="run.overrides[key] ?? variantDefault(key)"
-            @input="onOverride(key, ($event.target as HTMLInputElement).value)"
+            class="w-full min-w-0 bg-zinc-800 rounded px-2 py-1 text-xs"
+            :aria-label="param.name"
+            :value="run.overrides[param.key] ?? variantDefault(param.key)"
+            @input="onOverride(param.key, ($event.target as HTMLInputElement).value)"
           />
         </div>
       </div>
@@ -61,6 +72,7 @@ import { useRunStore } from '../stores/run'
 import { useTraceStore } from '../stores/trace'
 import { usePlaybackStore } from '../stores/playback'
 import { useNotificationsStore } from '../stores/notifications'
+import HelpTooltip from './HelpTooltip.vue'
 
 const props = defineProps<{ client?: ApiClient }>()
 const client = props.client ?? defaultApi
@@ -70,13 +82,58 @@ const traceStore = useTraceStore()
 const playback = usePlaybackStore()
 const notifications = useNotificationsStore()
 
-const advancedKeys = ['alpha', 'beta', 'iter_cap', 'population', 'tau_max', 'z']
-const advancedLabels: Record<string, { text: string; math: boolean }> = {
-  alpha: { text: 'α', math: true },
+const advancedParams = [
+  {
+    key: 'alpha',
+    name: 'alpha',
+    symbol: '&alpha;',
+    description: 'Pheromone influence exponent used when choosing the next move.',
+  },
+  {
+    key: 'beta',
+    name: 'beta',
+    symbol: '&beta;',
+    description: 'Heuristic influence exponent used when choosing the next move.',
+  },
+  {
+    key: 'iter_cap',
+    name: 'iteration cap',
+    symbol: 'I<sub>max</sub>',
+    description: 'Maximum number of solver iterations before the run stops.',
+  },
+  {
+    key: 'population',
+    name: 'population',
+    symbol: 'n',
+    description: 'Number of walkers sampled in each iteration.',
+  },
+  {
+    key: 'tau_max',
+    name: 'maximum pheromone',
+    symbol: '&tau;<sub>max</sub>',
+    description: 'Upper bound used when clamping pheromone values.',
+  },
+  {
+    key: 'z',
+    name: 'zeta',
+    symbol: '&zeta;',
+    description: 'Exploration pressure parameter for stochastic path selection.',
+  },
+] as const
+
+const variantDescriptions: Record<string, string> = {
+  'zipmould-uni-signed':
+    'Single shared pheromone field with signed reinforcement, so good moves can be boosted and poor moves can be discouraged.',
+  'zipmould-uni-positive':
+    'Single shared pheromone field with positive-only reinforcement. This is the tuned default and usually the fastest ZipMould variant.',
+  'zipmould-strat-signed':
+    'Separate pheromone fields per waypoint segment with signed reinforcement, preserving segment-specific memory and penalties.',
+  'zipmould-strat-positive':
+    'Separate pheromone fields per waypoint segment with positive-only reinforcement, emphasizing segment-specific successful moves.',
 }
 
-function advancedLabel(key: string): { text: string; math: boolean } {
-  return advancedLabels[key] ?? { text: key, math: false }
+function variantDescription(name: string): string {
+  return variantDescriptions[name] ?? 'Algorithm variant loaded from the server.'
 }
 
 function variantDefault(key: string): unknown {
