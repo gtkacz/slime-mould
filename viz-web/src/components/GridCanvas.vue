@@ -291,7 +291,7 @@ const walkerLegend = {
 const palette = {
   wall: '#ff3f14',
   bestPath: '#ae43ff',
-  bestPathSolved: '#00883b',
+  bestPathSolved: '#00672d',
   bestPathUnsolved: '#f32525',
   waypoint: '#c084fc',
   waypointText: '#f5f3ff',
@@ -509,9 +509,9 @@ function formatLegendValue(value: number): string {
 
 .wall-stroke:hover,
 .best-path-line:hover {
-  filter: brightness(1.2);
+  filter: brightness(1.1);
   opacity: 100%;
-  stroke-width: 7;
+  stroke-width: 10;
 }
 
 .walker-marker:hover circle {
