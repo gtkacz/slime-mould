@@ -14,7 +14,7 @@ describe('ApiClient', () => {
     const client = new ApiClient()
     const out = await client.health()
     expect(out.status).toBe('ok')
-    const url = String(fetchMock.mock.calls[0][0])
+    const url = String((fetchMock.mock.calls[0] as unknown[])[0])
     expect(url.endsWith('/api/health')).toBe(true)
   })
 
