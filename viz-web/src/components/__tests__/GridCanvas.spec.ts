@@ -55,7 +55,7 @@ describe('GridCanvas', () => {
     const wrapper = mount(GridCanvas)
     await wrapper.vm.$nextTick()
     expect(wrapper.find('svg').exists()).toBe(true)
-    expect(wrapper.find('svg').attributes('viewBox')).toBe('0 0 480 530')
+    expect(wrapper.find('svg').attributes('viewBox')).toBe('0 0 480 554')
     expect(wrapper.find('[data-layer="cells"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="walls"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="blocked"]').exists()).toBe(true)
@@ -78,6 +78,22 @@ describe('GridCanvas', () => {
     expect(wrapper.find('[data-layer="pheromone"]').exists()).toBe(false)
     expect(wrapper.find('[data-layer="pheromone-legend"]').exists()).toBe(false)
     expect(wrapper.find('[data-layer="cells"]').exists()).toBe(true)
+  })
+
+  it('renders walker ids on the grid', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', tinyTrace)
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    const marker = wrapper.find('[data-layer="walkers"] .walker-marker')
+    expect(marker.exists()).toBe(true)
+    expect(marker.attributes('transform')).toBe('translate(120 120)')
+    expect(marker.find('circle').attributes('fill')).toBe('#22c55e')
+    expect(marker.find('text').text()).toBe('0')
   })
 
   it('renders walls on the boundary between adjacent cells', async () => {
@@ -111,8 +127,8 @@ describe('GridCanvas', () => {
       y1: '0',
       x2: '240',
       y2: '240',
-      stroke: '#ef4444',
-      'stroke-width': '3',
+      stroke: '#ff3f14',
+      'stroke-width': '5',
       'vector-effect': 'non-scaling-stroke',
     })
     expect(lines[1]?.attributes()).toMatchObject({
@@ -120,8 +136,8 @@ describe('GridCanvas', () => {
       y1: '240',
       x2: '240',
       y2: '240',
-      stroke: '#ef4444',
-      'stroke-width': '3',
+      stroke: '#ff3f14',
+      'stroke-width': '5',
       'vector-effect': 'non-scaling-stroke',
     })
   })
@@ -201,13 +217,13 @@ describe('GridCanvas', () => {
     await wrapper.vm.$nextTick()
 
     expect(wrapper.find('[data-layer="pheromone"] rect').attributes('fill')).toBe(
-      'hsl(221 88% 38%)',
+      'hsl(173 88% 38%)',
     )
-    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#bb48ec')
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#ae43ff')
     expect(wrapper.find('[data-layer="waypoints"] .waypoint-marker-ring').attributes('stroke')).toBe(
       '#c084fc',
     )
-    expect(wrapper.find('[data-layer="walls"] line').attributes('stroke')).toBe('#ef4444')
+    expect(wrapper.find('[data-layer="walls"] line').attributes('stroke')).toBe('#ff3f14')
     expect(wrapper.find('[data-layer="walkers"] circle').attributes('fill')).toBe('#22c55e')
   })
 
@@ -230,12 +246,35 @@ describe('GridCanvas', () => {
     })
     const stops = wrapper.findAll('#pheromone-gradient stop')
     expect(stops.map((stop) => stop.attributes('stop-color'))).toEqual([
-      'hsl(238 88% 18%)',
-      'hsl(221 88% 38%)',
-      'hsl(204 88% 58%)',
+      'hsl(190 88% 18%)',
+      'hsl(173 88% 38%)',
+      'hsl(156 88% 58%)',
     ])
     expect(legend.text()).toContain('pheromone')
     expect(legend.text()).toContain('-10')
     expect(legend.text()).toContain('10')
+  })
+
+  it('renders a walker color legend for status colors', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', tinyTrace)
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    const legend = wrapper.find('[data-layer="walker-legend"]')
+    expect(legend.exists()).toBe(true)
+    expect(legend.attributes('transform')).toBe('translate(150 502)')
+    expect(legend.text()).toContain('walkers')
+    expect(legend.text()).toContain('alive')
+    expect(legend.text()).toContain('dead-end')
+    expect(legend.text()).toContain('complete')
+    expect(legend.findAll('circle').map((circle) => circle.attributes('fill'))).toEqual([
+      '#22c55e',
+      '#1c2a21',
+      '#00e755',
+    ])
   })
 })

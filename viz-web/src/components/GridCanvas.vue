@@ -89,14 +89,23 @@
       />
     </g>
     <g v-if="layers.walkers" data-layer="walkers">
-      <circle
+      <g
         v-for="w in walkers"
         :key="`w-${w.id}`"
-        :cx="cellCenterX(w.cell)"
-        :cy="cellCenterY(w.cell)"
-        :r="cellSize * 0.18"
-        :fill="walkerColor(w.status)"
-      />
+        class="walker-marker"
+        :transform="`translate(${cellCenterX(w.cell)} ${cellCenterY(w.cell)})`"
+      >
+        <circle :r="cellSize * 0.2" :fill="walkerColor(w.status)" />
+        <text
+          text-anchor="middle"
+          dominant-baseline="central"
+          :font-size="walkerLabelSize"
+          font-weight="800"
+          :fill="walkerLabelColor(w.status)"
+        >
+          {{ w.id }}
+        </text>
+      </g>
     </g>
     <g v-if="layers.waypoints" data-layer="waypoints">
       <g
@@ -157,6 +166,32 @@
         {{ formatLegendValue(tauBounds.max) }}
       </text>
     </g>
+    <g
+      v-if="layers.walkers"
+      data-layer="walker-legend"
+      :transform="`translate(${walkerLegend.x} ${walkerLegend.y})`"
+    >
+      <text :x="0" y="-5" fill="#d4d4d8" font-size="10" font-weight="700">
+        walkers
+      </text>
+      <g
+        v-for="(item, i) in walkerLegendItems"
+        :key="item.status"
+        :transform="`translate(${i * walkerLegend.itemWidth} 0)`"
+      >
+        <circle
+          :cx="5"
+          :cy="4"
+          :r="4"
+          :fill="item.color"
+          stroke="#3f3f46"
+          stroke-width="0.75"
+        />
+        <text x="14" y="7" fill="#a1a1aa" font-size="9">
+          {{ item.label }}
+        </text>
+      </g>
+    </g>
   </svg>
 </template>
 
@@ -176,12 +211,17 @@ const { layers, index } = storeToRefs(playback)
 const replay = useTraceReplay(trace, index)
 
 const size = 480
-const canvasHeight = size + 50
+const canvasHeight = size + 74
 const legend = {
   x: 0,
   y: size + 22,
   width: 112,
   height: 8,
+} as const
+const walkerLegend = {
+  x: 150,
+  y: size + 22,
+  itemWidth: 74,
 } as const
 
 const palette = {
@@ -275,11 +315,22 @@ const bestPathPoints = computed(() =>
 )
 
 const walkers = computed(() => replay.walkers.value)
+const walkerLabelSize = computed(() => Math.max(5, Math.min(14, cellSize.value * 0.18)))
+
+const walkerLegendItems = computed(() => [
+  { status: 'alive' as const, label: 'alive', color: palette.walkerAlive },
+  { status: 'dead-end' as const, label: 'dead-end', color: palette.walkerDeadEnd },
+  { status: 'complete' as const, label: 'complete', color: palette.walkerComplete },
+])
 
 function walkerColor(status: WalkerStatus): string {
   if (status === 'alive') return palette.walkerAlive
   if (status === 'dead-end') return palette.walkerDeadEnd
   return palette.walkerComplete
+}
+
+function walkerLabelColor(status: WalkerStatus): string {
+  return status === 'dead-end' ? '#e4e4e7' : '#052e16'
 }
 
 function formatLegendValue(value: number): string {
@@ -294,5 +345,13 @@ function formatLegendValue(value: number): string {
 
 .waypoint-marker text {
   pointer-events: none;
+}
+
+.walker-marker text {
+  paint-order: stroke;
+  pointer-events: none;
+  stroke: #09090b;
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
 }
 </style>
