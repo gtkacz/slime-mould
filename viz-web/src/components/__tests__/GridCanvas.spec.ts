@@ -56,6 +56,7 @@ describe('GridCanvas', () => {
     await wrapper.vm.$nextTick()
     expect(wrapper.find('svg').exists()).toBe(true)
     expect(wrapper.find('[data-layer="walls"]').exists()).toBe(true)
+    expect(wrapper.find('[data-layer="blocked"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="pheromone"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="best-path"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="walkers"]').exists()).toBe(true)
@@ -102,5 +103,30 @@ describe('GridCanvas', () => {
     const lines = wrapper.findAll('[data-layer="walls"] line')
     expect(lines[0]?.attributes()).toMatchObject({ x1: '240', y1: '0', x2: '240', y2: '240' })
     expect(lines[1]?.attributes()).toMatchObject({ x1: '0', y1: '240', x2: '240', y2: '240' })
+  })
+
+  it('renders blocked cells as excluded board squares', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', {
+      ...tinyTrace,
+      header: {
+        ...tinyTrace.header,
+        blocked: [[1, 0]],
+      },
+    })
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    const blocked = wrapper.find('[data-layer="blocked"] rect')
+    expect(blocked.attributes()).toMatchObject({
+      x: '0',
+      y: '240',
+      width: '240',
+      height: '240',
+      fill: '#18181b',
+    })
   })
 })

@@ -19,6 +19,28 @@
         stroke-width="0.5"
       />
     </g>
+    <g data-layer="blocked">
+      <rect
+        v-for="(cell, i) in trace.header.blocked"
+        :key="`blocked-${i}`"
+        :x="cell[1] * cellSize"
+        :y="cell[0] * cellSize"
+        :width="cellSize"
+        :height="cellSize"
+        fill="#18181b"
+        stroke="#52525b"
+        stroke-width="1"
+      />
+      <path
+        v-for="(cell, i) in trace.header.blocked"
+        :key="`blocked-x-${i}`"
+        :d="blockedHatchPath(cell)"
+        fill="none"
+        stroke="#71717a"
+        stroke-width="1.5"
+        opacity="0.75"
+      />
+    </g>
     <g v-if="layers.walls" data-layer="walls">
       <line
         v-for="(w, i) in trace.header.walls"
@@ -105,6 +127,13 @@ function wallLine(wall: TraceWall): { x1: number; y1: number; x2: number; y2: nu
   const y = (minRow + 1) * cs
   const x1 = minCol * cs
   return { x1, y1: y, x2: x1 + cs, y2: y }
+}
+
+function blockedHatchPath(cell: [number, number]): string {
+  const x = cell[1] * cellSize.value
+  const y = cell[0] * cellSize.value
+  const cs = cellSize.value
+  return `M ${x} ${y} L ${x + cs} ${y + cs} M ${x + cs} ${y} L ${x} ${y + cs}`
 }
 
 function viridis(t: number): string {
