@@ -103,14 +103,14 @@ describe('GridCanvas', () => {
     await wrapper.vm.$nextTick()
 
     const lines = wrapper.findAll('[data-layer="walls"] line')
-    expect(lines).toHaveLength(4)
+    expect(lines).toHaveLength(2)
     expect(lines[0]?.attributes()).toMatchObject({
       x1: '240',
       y1: '0',
       x2: '240',
       y2: '240',
-      stroke: '#111827',
-      'stroke-width': '6',
+      stroke: '#ef4444',
+      'stroke-width': '3',
       'vector-effect': 'non-scaling-stroke',
     })
     expect(lines[1]?.attributes()).toMatchObject({
@@ -118,26 +118,8 @@ describe('GridCanvas', () => {
       y1: '240',
       x2: '240',
       y2: '240',
-      stroke: '#111827',
-      'stroke-width': '6',
-      'vector-effect': 'non-scaling-stroke',
-    })
-    expect(lines[2]?.attributes()).toMatchObject({
-      x1: '240',
-      y1: '0',
-      x2: '240',
-      y2: '240',
-      stroke: '#f97316',
-      'stroke-width': '2.5',
-      'vector-effect': 'non-scaling-stroke',
-    })
-    expect(lines[3]?.attributes()).toMatchObject({
-      x1: '0',
-      y1: '240',
-      x2: '240',
-      y2: '240',
-      stroke: '#f97316',
-      'stroke-width': '2.5',
+      stroke: '#ef4444',
+      'stroke-width': '3',
       'vector-effect': 'non-scaling-stroke',
     })
   })
@@ -183,14 +165,14 @@ describe('GridCanvas', () => {
     const ring = markers[0]?.find('.waypoint-marker-ring')
     expect(Number(halo?.attributes('r'))).toBeCloseTo(81.6)
     expect(halo?.attributes()).toMatchObject({
-      fill: '#a78bfa',
+      fill: '#c084fc',
       opacity: '0.18',
     })
     expect(Number(ring?.attributes('r'))).toBeCloseTo(57.6)
     expect(Number(ring?.attributes('stroke-width'))).toBeCloseTo(10.8)
     expect(ring?.attributes()).toMatchObject({
       fill: '#27272a',
-      stroke: '#a78bfa',
+      stroke: '#c084fc',
     })
     expect(markers[0]?.find('text').text()).toBe('1')
     expect(markers[1]?.find('text').text()).toBe('2')
@@ -199,7 +181,18 @@ describe('GridCanvas', () => {
   it('keeps major overlay categories on separate hue ranges', async () => {
     const traceStore = useTraceStore()
     const playback = usePlaybackStore()
-    traceStore.set('id', tinyTrace)
+    traceStore.set('id', {
+      ...tinyTrace,
+      header: {
+        ...tinyTrace.header,
+        walls: [
+          [
+            [0, 0],
+            [0, 1],
+          ],
+        ],
+      },
+    })
     playback.setTotal(1)
 
     const wrapper = mount(GridCanvas)
@@ -208,10 +201,11 @@ describe('GridCanvas', () => {
     expect(wrapper.find('[data-layer="pheromone"] rect').attributes('fill')).toBe(
       'hsl(221 88% 38%)',
     )
-    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#fb7185')
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#ec4899')
     expect(wrapper.find('[data-layer="waypoints"] .waypoint-marker-ring').attributes('stroke')).toBe(
-      '#a78bfa',
+      '#c084fc',
     )
+    expect(wrapper.find('[data-layer="walls"] line').attributes('stroke')).toBe('#ef4444')
     expect(wrapper.find('[data-layer="walkers"] circle').attributes('fill')).toBe('#22c55e')
   })
 })

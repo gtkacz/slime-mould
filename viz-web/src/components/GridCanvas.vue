@@ -57,26 +57,13 @@
     <g v-if="layers.walls" data-layer="walls">
       <line
         v-for="(w, i) in trace.header.walls"
-        :key="`wall-outline-${i}`"
-        :x1="wallLine(w).x1"
-        :y1="wallLine(w).y1"
-        :x2="wallLine(w).x2"
-        :y2="wallLine(w).y2"
-        stroke="#111827"
-        stroke-width="6"
-        stroke-linecap="round"
-        vector-effect="non-scaling-stroke"
-        class="wall-stroke wall-stroke-outline"
-      />
-      <line
-        v-for="(w, i) in trace.header.walls"
         :key="`wall-core-${i}`"
         :x1="wallLine(w).x1"
         :y1="wallLine(w).y1"
         :x2="wallLine(w).x2"
         :y2="wallLine(w).y2"
         :stroke="palette.wall"
-        stroke-width="2.5"
+        stroke-width="3"
         stroke-linecap="round"
         vector-effect="non-scaling-stroke"
         class="wall-stroke wall-stroke-core"
@@ -154,9 +141,9 @@ const replay = useTraceReplay(trace, index)
 
 const size = 480
 const palette = {
-  wall: '#f97316',
-  bestPath: '#fb7185',
-  waypoint: '#a78bfa',
+  wall: '#ef4444',
+  bestPath: '#bb48ec',
+  waypoint: '#c084fc',
   waypointText: '#f5f3ff',
   walkerAlive: '#22c55e',
   walkerDeadEnd: '#84cc16',
@@ -248,10 +235,6 @@ function walkerColor(status: WalkerStatus): string {
 </script>
 
 <style scoped>
-.waypoint-marker {
-  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.45));
-}
-
 .waypoint-marker-ring {
   paint-order: stroke;
 }
