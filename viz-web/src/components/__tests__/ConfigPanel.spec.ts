@@ -48,4 +48,29 @@ describe('ConfigPanel', () => {
     const store = useTraceStore()
     expect(store.traceId).toBe('t1')
   })
+
+  it('renders math-like advanced variable labels without changing input text', async () => {
+    const client = new ApiClient()
+    vi.spyOn(client, 'listPuzzles').mockResolvedValue([
+      { id: 'level_1', name: 'Lvl 1', difficulty: 'Easy', N: 2, K: 1 },
+    ])
+    vi.spyOn(client, 'listVariants').mockResolvedValue([
+      {
+        name: 'zipmould-uni-positive',
+        config_path: 'x',
+        defaults: { alpha: 1, beta: 2 },
+      },
+    ])
+
+    const wrapper = mount(ConfigPanel, { props: { client } })
+    await new Promise((r) => setTimeout(r, 0))
+    await wrapper.vm.$nextTick()
+
+    const advanced = wrapper.find('details')
+    expect(advanced.text()).toContain('α')
+    expect(advanced.text()).toContain('beta')
+    expect(advanced.text()).not.toContain('alpha')
+    expect(advanced.find('.font-serif').text()).toBe('α')
+    expect(wrapper.findAll('input').map((input) => input.attributes('value'))).toContain('1')
+  })
 })

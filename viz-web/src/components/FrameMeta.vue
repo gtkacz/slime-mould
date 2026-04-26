@@ -4,9 +4,13 @@
     <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
       <dt class="text-zinc-500">t =</dt>
       <dd class="tabular-nums">t = {{ frame?.t ?? '-' }}</dd>
-      <dt class="text-zinc-500">V_b</dt>
+      <dt class="text-zinc-500">
+        <span class="font-serif">V<sub>b</sub></span>
+      </dt>
       <dd class="tabular-nums">{{ frame?.v_b.toFixed(3) ?? '-' }}</dd>
-      <dt class="text-zinc-500">V_c</dt>
+      <dt class="text-zinc-500">
+        <span class="font-serif">V<sub>c</sub></span>
+      </dt>
       <dd class="tabular-nums">{{ frame?.v_c.toFixed(3) ?? '-' }}</dd>
     </dl>
   </section>

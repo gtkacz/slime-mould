@@ -44,14 +44,29 @@
     <g v-if="layers.walls" data-layer="walls">
       <line
         v-for="(w, i) in trace.header.walls"
-        :key="`wall-${i}`"
+        :key="`wall-outline-${i}`"
         :x1="wallLine(w).x1"
         :y1="wallLine(w).y1"
         :x2="wallLine(w).x2"
         :y2="wallLine(w).y2"
-        stroke="#f87171"
-        stroke-width="2"
+        stroke="#111827"
+        stroke-width="6"
         stroke-linecap="round"
+        vector-effect="non-scaling-stroke"
+        class="wall-stroke wall-stroke-outline"
+      />
+      <line
+        v-for="(w, i) in trace.header.walls"
+        :key="`wall-core-${i}`"
+        :x1="wallLine(w).x1"
+        :y1="wallLine(w).y1"
+        :x2="wallLine(w).x2"
+        :y2="wallLine(w).y2"
+        stroke="#facc15"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        vector-effect="non-scaling-stroke"
+        class="wall-stroke wall-stroke-core"
       />
     </g>
     <g v-if="layers.bestPath" data-layer="best-path">

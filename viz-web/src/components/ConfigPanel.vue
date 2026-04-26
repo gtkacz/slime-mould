@@ -29,7 +29,11 @@
       <summary class="cursor-pointer text-xs text-zinc-400">Advanced</summary>
       <div class="mt-2 space-y-1">
         <div v-for="key in advancedKeys" :key="key" class="flex items-center gap-2">
-          <span class="text-xs w-32">{{ key }}</span>
+          <span class="text-xs w-32">
+            <span :class="{ 'font-serif': advancedLabel(key).math }">
+              {{ advancedLabel(key).text }}
+            </span>
+          </span>
           <input
             class="flex-1 bg-zinc-800 rounded px-2 py-1 text-xs"
             :value="run.overrides[key] ?? variantDefault(key)"
@@ -67,6 +71,13 @@ const playback = usePlaybackStore()
 const notifications = useNotificationsStore()
 
 const advancedKeys = ['alpha', 'beta', 'iter_cap', 'population', 'tau_max', 'z']
+const advancedLabels: Record<string, { text: string; math: boolean }> = {
+  alpha: { text: 'α', math: true },
+}
+
+function advancedLabel(key: string): { text: string; math: boolean } {
+  return advancedLabels[key] ?? { text: key, math: false }
+}
 
 function variantDefault(key: string): unknown {
   const v = run.variants.find((x) => x.name === run.variant)

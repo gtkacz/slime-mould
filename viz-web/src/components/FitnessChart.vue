@@ -7,8 +7,8 @@
       <line :x1="cursorX" :x2="cursorX" :y1="0" :y2="H" stroke="#fde68a" stroke-dasharray="2 2" />
     </svg>
     <div class="text-xs flex gap-3 mt-1">
-      <span class="text-emerald-400">V_b</span>
-      <span class="text-blue-400">V_c</span>
+      <span class="text-emerald-400 font-serif">V<sub>b</sub></span>
+      <span class="text-blue-400 font-serif">V<sub>c</sub></span>
     </div>
   </section>
 </template>

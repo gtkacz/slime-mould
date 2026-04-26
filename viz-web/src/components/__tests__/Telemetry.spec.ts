@@ -61,6 +61,9 @@ describe('telemetry components', () => {
     const w = mount(FitnessChart)
     expect(w.find('svg').exists()).toBe(true)
     expect(w.findAll('path').length).toBeGreaterThan(0)
+    expect(w.find('.text-emerald-400').text()).toBe('Vb')
+    expect(w.find('.text-blue-400').text()).toBe('Vc')
+    expect(w.findAll('sub').map((node) => node.text())).toEqual(['b', 'c'])
   })
 
   it('WalkerTable lists walkers from the current frame', () => {
@@ -72,6 +75,8 @@ describe('telemetry components', () => {
   it('FrameMeta shows current t and V_b/V_c', () => {
     const w = mount(FrameMeta)
     expect(w.text()).toContain('t = 5')
+    expect(w.findAll('dt .font-serif').map((node) => node.text())).toEqual(['Vb', 'Vc'])
+    expect(w.findAll('sub').map((node) => node.text())).toEqual(['b', 'c'])
     expect(w.text()).toContain('0.4')
     expect(w.text()).toContain('0.2')
   })

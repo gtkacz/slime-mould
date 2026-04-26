@@ -101,8 +101,43 @@ describe('GridCanvas', () => {
     await wrapper.vm.$nextTick()
 
     const lines = wrapper.findAll('[data-layer="walls"] line')
-    expect(lines[0]?.attributes()).toMatchObject({ x1: '240', y1: '0', x2: '240', y2: '240' })
-    expect(lines[1]?.attributes()).toMatchObject({ x1: '0', y1: '240', x2: '240', y2: '240' })
+    expect(lines).toHaveLength(4)
+    expect(lines[0]?.attributes()).toMatchObject({
+      x1: '240',
+      y1: '0',
+      x2: '240',
+      y2: '240',
+      stroke: '#111827',
+      'stroke-width': '6',
+      'vector-effect': 'non-scaling-stroke',
+    })
+    expect(lines[1]?.attributes()).toMatchObject({
+      x1: '0',
+      y1: '240',
+      x2: '240',
+      y2: '240',
+      stroke: '#111827',
+      'stroke-width': '6',
+      'vector-effect': 'non-scaling-stroke',
+    })
+    expect(lines[2]?.attributes()).toMatchObject({
+      x1: '240',
+      y1: '0',
+      x2: '240',
+      y2: '240',
+      stroke: '#facc15',
+      'stroke-width': '2.5',
+      'vector-effect': 'non-scaling-stroke',
+    })
+    expect(lines[3]?.attributes()).toMatchObject({
+      x1: '0',
+      y1: '240',
+      x2: '240',
+      y2: '240',
+      stroke: '#facc15',
+      'stroke-width': '2.5',
+      'vector-effect': 'non-scaling-stroke',
+    })
   })
 
   it('renders blocked cells as excluded board squares', async () => {
