@@ -49,7 +49,7 @@ def list_puzzles() -> list[PuzzleSummary]:
 def _load_toml(path: Path) -> dict[str, Any]:
     with path.open("rb") as f:
         data = tomllib.load(f)
-    return data.get("solver", data) if isinstance(data, dict) else {}
+    return data.get("solver", data)
 
 
 @router.get("/variants", response_model=list[VariantSummary])
