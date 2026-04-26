@@ -70,6 +70,7 @@ describe('telemetry components', () => {
     const w = mount(WalkerTable)
     expect(w.text()).toContain('alive')
     expect(w.text()).toContain('complete')
+    expect(w.find('button[aria-label="fitness description"]').exists()).toBe(true)
   })
 
   it('FrameMeta shows current t and V_b/V_c', () => {

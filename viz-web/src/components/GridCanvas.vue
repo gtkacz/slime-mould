@@ -102,6 +102,7 @@
           :font-size="walkerLabelSize"
           font-weight="800"
           :fill="walkerLabelColor(w.status)"
+          fill-opacity="0.1"
         >
           {{ w.id }}
         </text>
@@ -330,7 +331,7 @@ function walkerColor(status: WalkerStatus): string {
 }
 
 function walkerLabelColor(status: WalkerStatus): string {
-  return status === 'dead-end' ? '#e4e4e7' : '#052e16'
+  return status === 'dead-end' ? '#e4e4e7' : '#64ee9e'
 }
 
 function formatLegendValue(value: number): string {
@@ -350,8 +351,8 @@ function formatLegendValue(value: number): string {
 .walker-marker text {
   paint-order: stroke;
   pointer-events: none;
-  stroke: #09090b;
+  /* stroke: #09090b;
   stroke-width: 1.5px;
-  stroke-linejoin: round;
+  stroke-linejoin: round; */
 }
 </style>

@@ -8,7 +8,15 @@
           <th class="text-left">cell</th>
           <th class="text-left">seg</th>
           <th class="text-left">status</th>
-          <th class="text-right">fitness</th>
+          <th class="text-right">
+            <span class="inline-flex items-center justify-end gap-1">
+              <span>fitness</span>
+              <HelpTooltip
+                label="fitness description"
+                text="Fitness is path coverage plus waypoint progress, closeness to the next waypoint by Manhattan distance, and a success bonus for a complete valid solution."
+              />
+            </span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -30,6 +38,7 @@ import { storeToRefs } from 'pinia'
 import { useTraceStore } from '../stores/trace'
 import { usePlaybackStore } from '../stores/playback'
 import type { WalkerStatus } from '../api/types'
+import HelpTooltip from './HelpTooltip.vue'
 
 const { trace } = storeToRefs(useTraceStore())
 const { index } = storeToRefs(usePlaybackStore())
