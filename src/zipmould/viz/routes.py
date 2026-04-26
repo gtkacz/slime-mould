@@ -7,10 +7,15 @@ from importlib.metadata import version as _get_version
 
 from fastapi import APIRouter
 
-try:
-    ZIPMOULD_VERSION: str = _get_version("zipmould")
-except PackageNotFoundError:
-    ZIPMOULD_VERSION = "unknown"
+
+def _resolve_zipmould_version() -> str:
+    try:
+        return _get_version("zipmould")
+    except PackageNotFoundError:
+        return "unknown"
+
+
+ZIPMOULD_VERSION: str = _resolve_zipmould_version()
 
 router = APIRouter(prefix="/api")
 
