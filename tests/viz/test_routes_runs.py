@@ -33,7 +33,7 @@ def test_runs_unknown_puzzle_returns_404() -> None:
     body = {"puzzle_id": "no-such", "variant": "zipmould-uni-positive", "seed": 0}
     resp = client.post("/api/runs", json=body)
     assert resp.status_code == HTTPStatus.NOT_FOUND
-    assert resp.json()["detail"]["kind"] == "puzzle_not_found"
+    assert resp.json()["kind"] == "puzzle_not_found"
 
 
 def test_runs_unknown_variant_returns_422() -> None:
