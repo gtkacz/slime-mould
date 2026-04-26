@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import tomllib
+import uuid
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _get_version
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Request
 
 from zipmould.io.puzzles import load_corpus
-from zipmould.viz.schemas import ALLOWED_VARIANTS, PuzzleSummary, VariantSummary
+from zipmould.viz.runner import RunnerError, run_solve
+from zipmould.viz.schemas import ALLOWED_VARIANTS, PuzzleSummary, RunRequest, RunResponse, VariantSummary
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _CONFIG_DIR = _REPO_ROOT / "configs" / "ablations"
@@ -62,3 +64,29 @@ def list_variants() -> list[VariantSummary]:
         merged.update(_load_toml(path))
         out.append(VariantSummary(name=name, config_path=str(path), defaults=merged))
     return out
+
+
+@router.post("/runs", response_model=RunResponse)
+def post_run(req: RunRequest, request: Request) -> RunResponse:
+    corpus = load_corpus(_CORPUS_PATH)
+    if req.puzzle_id not in corpus:
+        raise HTTPException(
+            status_code=404,
+            detail={"kind": "puzzle_not_found", "detail": f"unknown puzzle {req.puzzle_id!r}"},
+        )
+    puzzle = corpus[req.puzzle_id]
+    try:
+        trace_dict, cbor_bytes = run_solve(
+            puzzle=puzzle,
+            variant=req.variant,
+            seed=req.seed,
+            config_overrides=req.config_overrides,
+        )
+    except RunnerError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={"kind": "infeasible", "detail": str(exc)},
+        ) from exc
+    trace_id = uuid.uuid4().hex
+    request.app.state.trace_cache.put(trace_id, cbor_bytes)
+    return RunResponse(trace_id=trace_id, trace=trace_dict)
