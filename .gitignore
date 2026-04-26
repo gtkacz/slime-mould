@@ -221,3 +221,8 @@ experiments/stage2/out/aggregate.parquet
 experiments/stage4/out/results.parquet
 experiments/stage4/out/aggregate.parquet
 experiments/stage4/out/traces/
+
+# Visualizer
+viz-web/node_modules/
+viz-web/dist/
+src/zipmould/viz/static/
