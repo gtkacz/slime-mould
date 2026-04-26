@@ -60,6 +60,7 @@ describe('telemetry components', () => {
   it('FitnessChart renders an svg path', () => {
     const w = mount(FitnessChart)
     expect(w.find('svg').exists()).toBe(true)
+    expect(w.find('button[aria-label="fitness description"]').exists()).toBe(true)
     expect(w.findAll('path').length).toBeGreaterThan(0)
     expect(w.find('.text-emerald-400').text()).toBe('Vb')
     expect(w.find('.text-blue-400').text()).toBe('Vc')
@@ -70,7 +71,6 @@ describe('telemetry components', () => {
     const w = mount(WalkerTable)
     expect(w.text()).toContain('alive')
     expect(w.text()).toContain('complete')
-    expect(w.find('button[aria-label="fitness description"]').exists()).toBe(true)
   })
 
   it('FrameMeta shows current t and V_b/V_c', () => {

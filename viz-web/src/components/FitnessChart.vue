@@ -1,6 +1,12 @@
 <template>
   <section v-if="trace" class="p-3 text-zinc-100">
-    <h2 class="text-sm uppercase tracking-wide text-zinc-400 mb-2">Fitness</h2>
+    <h2 class="mb-2 flex items-center gap-1 text-sm uppercase tracking-wide text-zinc-400">
+      <span>Fitness</span>
+      <HelpTooltip
+        label="fitness description"
+        text="Fitness is path coverage plus waypoint progress, closeness to the next waypoint by Manhattan distance, and a success bonus for a complete valid solution."
+      />
+    </h2>
     <svg :viewBox="`0 0 ${W} ${H}`" class="w-full">
       <path :d="pathFor('v_b')" fill="none" stroke="#34d399" stroke-width="1.5" />
       <path :d="pathFor('v_c')" fill="none" stroke="#60a5fa" stroke-width="1.5" />
@@ -18,6 +24,7 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTraceStore } from '../stores/trace'
 import { usePlaybackStore } from '../stores/playback'
+import HelpTooltip from './HelpTooltip.vue'
 
 const W = 280
 const H = 80
