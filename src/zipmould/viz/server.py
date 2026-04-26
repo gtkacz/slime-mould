@@ -3,17 +3,20 @@
 from __future__ import annotations
 
 from http import HTTPStatus
+from pathlib import Path
 from typing import cast
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from zipmould.viz.cache import TraceCache
 from zipmould.viz.routes import ZIPMOULD_VERSION
 from zipmould.viz.routes import router as api_router
 
 _TRACE_CACHE_CAPACITY = 8
+_STATIC_DIR = Path(__file__).parent / "static"
 
 
 def _http_exception_handler(_request: Request, exc: HTTPException) -> JSONResponse:
@@ -50,4 +53,6 @@ def create_app() -> FastAPI:
     app.add_exception_handler(HTTPException, _http_exception_handler)  # pyright: ignore[reportArgumentType]
     app.add_exception_handler(RequestValidationError, _validation_handler)  # pyright: ignore[reportArgumentType]
     app.add_exception_handler(Exception, _generic_handler)
+    if _STATIC_DIR.exists():
+        app.mount("/", StaticFiles(directory=_STATIC_DIR, html=True), name="static")
     return app
