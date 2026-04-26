@@ -1,11 +1,18 @@
 <template>
   <svg
     v-if="trace"
-    :viewBox="`0 0 ${size} ${size}`"
+    :viewBox="`0 0 ${size} ${canvasHeight}`"
     class="bg-zinc-900 w-full h-full"
     role="img"
     aria-label="Solver grid"
   >
+    <defs>
+      <linearGradient id="pheromone-gradient" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" :stop-color="pheromoneColor(0)" />
+        <stop offset="50%" :stop-color="pheromoneColor(0.5)" />
+        <stop offset="100%" :stop-color="pheromoneColor(1)" />
+      </linearGradient>
+    </defs>
     <g data-layer="cells">
       <rect
         v-for="(_cell, i) in baseCells"
@@ -121,6 +128,34 @@
         </text>
       </g>
     </g>
+    <g
+      v-if="layers.pheromone"
+      data-layer="pheromone-legend"
+      :transform="`translate(${legend.x} ${legend.y})`"
+    >
+      <rect
+        :width="legend.width"
+        :height="legend.height"
+        fill="url(#pheromone-gradient)"
+        stroke="#3f3f46"
+        stroke-width="0.75"
+      />
+      <text :x="0" y="-5" fill="#d4d4d8" font-size="10" font-weight="700">
+        pheromone
+      </text>
+      <text :x="0" :y="legend.height + 11" fill="#a1a1aa" font-size="9">
+        {{ formatLegendValue(tauBounds.min) }}
+      </text>
+      <text
+        :x="legend.width"
+        :y="legend.height + 11"
+        text-anchor="end"
+        fill="#a1a1aa"
+        font-size="9"
+      >
+        {{ formatLegendValue(tauBounds.max) }}
+      </text>
+    </g>
   </svg>
 </template>
 
@@ -140,6 +175,14 @@ const { layers, index } = storeToRefs(playback)
 const replay = useTraceReplay(trace, index)
 
 const size = 480
+const canvasHeight = size + 50
+const legend = {
+  x: 14,
+  y: size + 22,
+  width: 112,
+  height: 8,
+} as const
+
 const palette = {
   wall: '#ef4444',
   bestPath: '#bb48ec',
@@ -154,6 +197,13 @@ const cellSize = computed(() => (trace.value ? size / trace.value.header.N : 0))
 const baseCells = computed(() => {
   const n = trace.value?.header.N ?? 0
   return Array.from({ length: n * n })
+})
+
+const tauBounds = computed(() => {
+  const cfg = trace.value?.config as { tau_max?: number; tau_signed?: boolean } | undefined
+  const max = cfg?.tau_max ?? 10
+  const min = cfg?.tau_signed ? -max : 0
+  return { min, max }
 })
 
 const cellCenterX = (cell: [number, number]) => (cell[1] + 0.5) * cellSize.value
@@ -191,9 +241,7 @@ function pheromoneColor(t: number): string {
 const cells = computed<string[]>(() => {
   const t = trace.value
   if (!t) return []
-  const cfg = t.config as { tau_max?: number; tau_signed?: boolean }
-  const tauMax = (cfg.tau_max as number | undefined) ?? 10
-  const tauMin = (cfg.tau_signed as boolean | undefined) ? -tauMax : 0
+  const { min: tauMin, max: tauMax } = tauBounds.value
   const N = t.header.N
   const cellCount = N * N
   const tau = replay.tau.value
@@ -231,6 +279,10 @@ function walkerColor(status: WalkerStatus): string {
   if (status === 'alive') return palette.walkerAlive
   if (status === 'dead-end') return palette.walkerDeadEnd
   return palette.walkerComplete
+}
+
+function formatLegendValue(value: number): string {
+  return Number.isInteger(value) ? value.toString() : value.toFixed(2)
 }
 </script>
 

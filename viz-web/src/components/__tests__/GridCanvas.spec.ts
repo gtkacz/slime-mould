@@ -55,6 +55,7 @@ describe('GridCanvas', () => {
     const wrapper = mount(GridCanvas)
     await wrapper.vm.$nextTick()
     expect(wrapper.find('svg').exists()).toBe(true)
+    expect(wrapper.find('svg').attributes('viewBox')).toBe('0 0 480 530')
     expect(wrapper.find('[data-layer="cells"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="walls"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="blocked"]').exists()).toBe(true)
@@ -75,6 +76,7 @@ describe('GridCanvas', () => {
     playback.toggleLayer('pheromone')
     await wrapper.vm.$nextTick()
     expect(wrapper.find('[data-layer="pheromone"]').exists()).toBe(false)
+    expect(wrapper.find('[data-layer="pheromone-legend"]').exists()).toBe(false)
     expect(wrapper.find('[data-layer="cells"]').exists()).toBe(true)
   })
 
@@ -201,11 +203,39 @@ describe('GridCanvas', () => {
     expect(wrapper.find('[data-layer="pheromone"] rect').attributes('fill')).toBe(
       'hsl(221 88% 38%)',
     )
-    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#ec4899')
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#bb48ec')
     expect(wrapper.find('[data-layer="waypoints"] .waypoint-marker-ring').attributes('stroke')).toBe(
       '#c084fc',
     )
     expect(wrapper.find('[data-layer="walls"] line').attributes('stroke')).toBe('#ef4444')
     expect(wrapper.find('[data-layer="walkers"] circle').attributes('fill')).toBe('#22c55e')
+  })
+
+  it('renders a pheromone color legend using the same ramp endpoints', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', tinyTrace)
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    const legend = wrapper.find('[data-layer="pheromone-legend"]')
+    expect(legend.exists()).toBe(true)
+    expect(legend.attributes('transform')).toBe('translate(14 502)')
+    expect(legend.find('rect').attributes()).toMatchObject({
+      width: '112',
+      height: '8',
+      fill: 'url(#pheromone-gradient)',
+    })
+    const stops = wrapper.findAll('#pheromone-gradient stop')
+    expect(stops.map((stop) => stop.attributes('stop-color'))).toEqual([
+      'hsl(238 88% 18%)',
+      'hsl(221 88% 38%)',
+      'hsl(204 88% 58%)',
+    ])
+    expect(legend.text()).toContain('pheromone')
+    expect(legend.text()).toContain('-10')
+    expect(legend.text()).toContain('10')
   })
 })
