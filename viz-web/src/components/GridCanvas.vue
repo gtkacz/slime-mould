@@ -6,18 +6,6 @@
     role="img"
     aria-label="Solver grid"
   >
-    <g v-if="layers.walls" data-layer="walls">
-      <line
-        v-for="(w, i) in trace.header.walls"
-        :key="`wall-${i}`"
-        :x1="cellPx(w[0][1])"
-        :y1="cellPx(w[0][0])"
-        :x2="cellPx(w[1][1])"
-        :y2="cellPx(w[1][0])"
-        stroke="#f87171"
-        stroke-width="2"
-      />
-    </g>
     <g v-if="layers.pheromone" data-layer="pheromone">
       <rect
         v-for="(_value, i) in cells"
@@ -29,6 +17,19 @@
         :fill="cells[i]"
         stroke="#3f3f46"
         stroke-width="0.5"
+      />
+    </g>
+    <g v-if="layers.walls" data-layer="walls">
+      <line
+        v-for="(w, i) in trace.header.walls"
+        :key="`wall-${i}`"
+        :x1="wallLine(w).x1"
+        :y1="wallLine(w).y1"
+        :x2="wallLine(w).x2"
+        :y2="wallLine(w).y2"
+        stroke="#f87171"
+        stroke-width="2"
+        stroke-linecap="round"
       />
     </g>
     <g v-if="layers.bestPath" data-layer="best-path">
@@ -76,7 +77,7 @@ import { storeToRefs } from 'pinia'
 import { useTraceStore } from '../stores/trace'
 import { usePlaybackStore } from '../stores/playback'
 import { useTraceReplay } from '../composables/useTraceReplay'
-import type { WalkerStatus } from '../api/types'
+import type { TraceWall, WalkerStatus } from '../api/types'
 
 const traceStore = useTraceStore()
 const playback = usePlaybackStore()
@@ -88,9 +89,23 @@ const replay = useTraceReplay(trace, index)
 const size = 480
 const cellSize = computed(() => (trace.value ? size / trace.value.header.N : 0))
 
-const cellPx = (i: number) => i * cellSize.value
 const cellCenterX = (cell: [number, number]) => (cell[1] + 0.5) * cellSize.value
 const cellCenterY = (cell: [number, number]) => (cell[0] + 0.5) * cellSize.value
+
+function wallLine(wall: TraceWall): { x1: number; y1: number; x2: number; y2: number } {
+  const [[r1, c1], [r2, c2]] = wall
+  const minRow = Math.min(r1, r2)
+  const minCol = Math.min(c1, c2)
+  const cs = cellSize.value
+  if (r1 === r2) {
+    const x = (minCol + 1) * cs
+    const y1 = minRow * cs
+    return { x1: x, y1, x2: x, y2: y1 + cs }
+  }
+  const y = (minRow + 1) * cs
+  const x1 = minCol * cs
+  return { x1, y1: y, x2: x1 + cs, y2: y }
+}
 
 function viridis(t: number): string {
   const u = Math.min(1, Math.max(0, t))
@@ -107,22 +122,26 @@ const cells = computed<string[]>(() => {
   const tauMax = (cfg.tau_max as number | undefined) ?? 10
   const tauMin = (cfg.tau_signed as boolean | undefined) ? -tauMax : 0
   const N = t.header.N
-  const out = Array.from<string>({ length: N * N })
+  const cellCount = N * N
   const tau = replay.tau.value
-  const halfL = 2 * t.header.L
-  for (let i = 0; i < N * N; i++) {
-    out[i] = viridis(0)
+  const directedEdges = 2 * t.header.L
+  // Without an exposed edge_of layout we approximate per-cell intensity by
+  // averaging directed-edge slots that fold into each cell via modulo. This
+  // preserves the contribution of every tau slot rather than letting the
+  // last write win, so going backward in time visibly reduces intensity.
+  const sums = new Float64Array(cellCount)
+  const counts = new Uint32Array(cellCount)
+  const limit = Math.min(directedEdges, tau.length)
+  for (let i = 0; i < limit; i++) {
+    const cell = i % cellCount
+    sums[cell]! += tau[i] ?? 0
+    counts[cell]! += 1
   }
-  // crude per-cell aggregate: average tau over the four directional edges
-  // adjacent to cell (r,c) where edge_id is r*N + c (rough mapping placeholder)
-  // The real edge_of layout lives in solver/state.py; without exposing it,
-  // we treat the first L slots as a flat per-edge field and average pairs
-  // by column-major adjacency. This approximation is good enough for visual
-  // contrast at small N; revisit if/when edge_of is exposed in the trace.
-  for (let i = 0; i < halfL && i < tau.length; i++) {
-    const cell = i % (N * N)
-    const norm = ((tau[i] ?? 0) - tauMin) / Math.max(1e-9, tauMax - tauMin)
-    out[cell] = viridis(norm)
+  const span = Math.max(1e-9, tauMax - tauMin)
+  const out = new Array<string>(cellCount)
+  for (let c = 0; c < cellCount; c++) {
+    const avg = counts[c]! > 0 ? sums[c]! / counts[c]! : 0
+    out[c] = viridis((avg - tauMin) / span)
   }
   return out
 })

@@ -74,4 +74,33 @@ describe('GridCanvas', () => {
     await wrapper.vm.$nextTick()
     expect(wrapper.find('[data-layer="pheromone"]').exists()).toBe(false)
   })
+
+  it('renders walls on the boundary between adjacent cells', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', {
+      ...tinyTrace,
+      header: {
+        ...tinyTrace.header,
+        walls: [
+          [
+            [0, 0],
+            [0, 1],
+          ],
+          [
+            [0, 0],
+            [1, 0],
+          ],
+        ],
+      },
+    })
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    const lines = wrapper.findAll('[data-layer="walls"] line')
+    expect(lines[0]?.attributes()).toMatchObject({ x1: '240', y1: '0', x2: '240', y2: '240' })
+    expect(lines[1]?.attributes()).toMatchObject({ x1: '0', y1: '240', x2: '240', y2: '240' })
+  })
 })

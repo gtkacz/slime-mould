@@ -18,6 +18,8 @@ export interface TauDelta {
   edges: [number, number, number][]
 }
 
+export type TraceWall = [[number, number], [number, number]]
+
 export interface Frame {
   t: number
   v_b: number
@@ -32,7 +34,7 @@ export interface TraceHeader {
   K: number
   L: number
   waypoints: [number, number][]
-  walls: [[number, number], [number, number]][]
+  walls: TraceWall[]
   blocked: [number, number][]
 }
 
