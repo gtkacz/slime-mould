@@ -222,7 +222,7 @@ describe('GridCanvas', () => {
 
     const legend = wrapper.find('[data-layer="pheromone-legend"]')
     expect(legend.exists()).toBe(true)
-    expect(legend.attributes('transform')).toBe('translate(14 502)')
+    expect(legend.attributes('transform')).toBe('translate(0 502)')
     expect(legend.find('rect').attributes()).toMatchObject({
       width: '112',
       height: '8',

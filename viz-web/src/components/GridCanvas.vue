@@ -177,7 +177,7 @@ const replay = useTraceReplay(trace, index)
 const size = 480
 const canvasHeight = size + 50
 const legend = {
-  x: 14,
+  x: 0,
   y: size + 22,
   width: 112,
   height: 8,
