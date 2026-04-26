@@ -166,4 +166,33 @@ describe('GridCanvas', () => {
       fill: '#18181b',
     })
   })
+
+  it('renders waypoints as high-contrast numbered badges', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', tinyTrace)
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    const markers = wrapper.findAll('[data-layer="waypoints"] .waypoint-marker')
+    expect(markers).toHaveLength(2)
+    expect(markers[0]?.attributes('transform')).toBe('translate(120 120)')
+    const halo = markers[0]?.find('.waypoint-marker-halo')
+    const ring = markers[0]?.find('.waypoint-marker-ring')
+    expect(Number(halo?.attributes('r'))).toBeCloseTo(81.6)
+    expect(halo?.attributes()).toMatchObject({
+      fill: '#facc15',
+      opacity: '0.16',
+    })
+    expect(Number(ring?.attributes('r'))).toBeCloseTo(57.6)
+    expect(Number(ring?.attributes('stroke-width'))).toBeCloseTo(10.8)
+    expect(ring?.attributes()).toMatchObject({
+      fill: '#27272a',
+      stroke: '#facc15',
+    })
+    expect(markers[0]?.find('text').text()).toBe('1')
+    expect(markers[1]?.find('text').text()).toBe('2')
+  })
 })

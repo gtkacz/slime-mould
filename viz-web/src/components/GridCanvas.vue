@@ -104,19 +104,35 @@
       />
     </g>
     <g v-if="layers.waypoints" data-layer="waypoints">
-      <text
+      <g
         v-for="(wp, i) in trace.header.waypoints"
         :key="`wp-${i}`"
-        :x="cellCenterX(wp)"
-        :y="cellCenterY(wp)"
-        text-anchor="middle"
-        dominant-baseline="middle"
-        :font-size="cellSize * 0.55"
-        font-weight="700"
-        fill="#fde68a"
+        class="waypoint-marker"
+        :transform="`translate(${cellCenterX(wp)} ${cellCenterY(wp)})`"
       >
-        {{ i + 1 }}
-      </text>
+        <circle
+          class="waypoint-marker-halo"
+          :r="cellSize * 0.34"
+          fill="#facc15"
+          opacity="0.16"
+        />
+        <circle
+          class="waypoint-marker-ring"
+          :r="cellSize * 0.24"
+          fill="#27272a"
+          stroke="#facc15"
+          :stroke-width="cellSize * 0.045"
+        />
+        <text
+          text-anchor="middle"
+          dominant-baseline="central"
+          :font-size="cellSize * 0.25"
+          font-weight="800"
+          fill="#fefce8"
+        >
+          {{ i + 1 }}
+        </text>
+      </g>
     </g>
   </svg>
 </template>
@@ -221,3 +237,17 @@ function walkerColor(status: WalkerStatus): string {
   return '#60a5fa'
 }
 </script>
+
+<style scoped>
+.waypoint-marker {
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.45));
+}
+
+.waypoint-marker-ring {
+  paint-order: stroke;
+}
+
+.waypoint-marker text {
+  pointer-events: none;
+}
+</style>
