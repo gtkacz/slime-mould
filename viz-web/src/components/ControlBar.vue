@@ -1,5 +1,7 @@
 <template>
-  <div class="flex items-center gap-3 px-3 py-2 bg-zinc-800 text-zinc-100 border-t border-zinc-700">
+  <div
+    class="flex flex-wrap items-center gap-3 px-3 py-2 bg-zinc-800 text-zinc-100 border-t border-zinc-700"
+  >
     <button
       data-test="step-back"
       aria-label="Step back"
@@ -66,6 +68,13 @@
       :value="speedDisplay"
       @change="onCustom"
     />
+    <span
+      data-test="duration-preview"
+      class="min-w-24 text-right text-xs tabular-nums text-zinc-300"
+      title="Estimated playback time from first to last frame at the current speed"
+    >
+      {{ durationPreview }}
+    </span>
   </div>
 </template>
 
@@ -104,6 +113,17 @@ const speedDisplay = computed<string>(() => {
   const v = store.speed
   return Number.isInteger(v) ? String(v) : String(Number(v.toFixed(3)))
 })
+
+const durationPreview = computed<string>(() => {
+  const seconds = store.total <= 1 ? 0 : (store.total - 1) / store.speed
+  return `${formatSeconds(seconds)} s`
+})
+
+function formatSeconds(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '0'
+  if (seconds < 10) return String(Number(seconds.toFixed(1)))
+  return Math.round(seconds).toLocaleString('en-US')
+}
 
 function onScrub(e: Event): void {
   const v = Number((e.target as HTMLInputElement).value)

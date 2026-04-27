@@ -36,4 +36,17 @@ describe('ControlBar', () => {
     await input.trigger('input')
     expect(store.index).toBe(5)
   })
+
+  it('previews playback duration from total frames and fps', async () => {
+    const store = usePlaybackStore()
+    store.setTotal(121)
+    store.setSpeed(4)
+    const wrapper = mount(ControlBar)
+
+    expect(wrapper.get('[data-test="duration-preview"]').text()).toBe('30 s')
+
+    store.setSpeed(16)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.get('[data-test="duration-preview"]').text()).toBe('7.5 s')
+  })
 })
