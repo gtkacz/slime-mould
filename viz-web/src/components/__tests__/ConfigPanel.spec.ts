@@ -25,9 +25,51 @@ const fakeTrace = {
 }
 
 const puzzles: PuzzleSummary[] = [
-  { id: 'level_10', name: 'Ten Forks', difficulty: 'Hard', N: 8, K: 4 },
-  { id: 'level_2', name: 'Small Start', difficulty: 'Easy', N: 4, K: 2 },
-  { id: 'bonus_a', name: 'Wide Bend', difficulty: 'Medium', N: 6, K: 3 },
+  {
+    id: 'level_10',
+    name: 'Ten Forks',
+    difficulty: 'Hard',
+    N: 8,
+    K: 4,
+    L: 64,
+    waypoints: [
+      [0, 0],
+      [1, 1],
+      [2, 2],
+      [3, 3],
+    ],
+    walls: [],
+    blocked: [],
+  },
+  {
+    id: 'level_2',
+    name: 'Small Start',
+    difficulty: 'Easy',
+    N: 4,
+    K: 2,
+    L: 16,
+    waypoints: [
+      [0, 0],
+      [3, 3],
+    ],
+    walls: [],
+    blocked: [],
+  },
+  {
+    id: 'bonus_a',
+    name: 'Wide Bend',
+    difficulty: 'Medium',
+    N: 6,
+    K: 3,
+    L: 36,
+    waypoints: [
+      [0, 0],
+      [2, 2],
+      [5, 5],
+    ],
+    walls: [],
+    blocked: [],
+  },
 ]
 
 const variants: VariantSummary[] = [
@@ -57,7 +99,17 @@ describe('ConfigPanel', () => {
   it('submits a run and writes the trace into the store', async () => {
     const client = new ApiClient()
     vi.spyOn(client, 'listPuzzles').mockResolvedValue([
-      { id: 'level_1', name: 'Lvl 1', difficulty: 'Easy', N: 2, K: 1 },
+      {
+        id: 'level_1',
+        name: 'Lvl 1',
+        difficulty: 'Easy',
+        N: 2,
+        K: 1,
+        L: 4,
+        waypoints: [[0, 0]],
+        walls: [],
+        blocked: [],
+      },
     ])
     vi.spyOn(client, 'listVariants').mockResolvedValue([
       { name: 'zipmould-uni-positive', config_path: 'x', defaults: {} },
@@ -81,7 +133,17 @@ describe('ConfigPanel', () => {
   it('renders math-like advanced variable labels without changing input text', async () => {
     const client = new ApiClient()
     vi.spyOn(client, 'listPuzzles').mockResolvedValue([
-      { id: 'level_1', name: 'Lvl 1', difficulty: 'Easy', N: 2, K: 1 },
+      {
+        id: 'level_1',
+        name: 'Lvl 1',
+        difficulty: 'Easy',
+        N: 2,
+        K: 1,
+        L: 4,
+        waypoints: [[0, 0]],
+        walls: [],
+        blocked: [],
+      },
     ])
     vi.spyOn(client, 'listVariants').mockResolvedValue([
       {
@@ -113,7 +175,17 @@ describe('ConfigPanel', () => {
   it('shows descriptions for each algorithm variant', async () => {
     const client = new ApiClient()
     vi.spyOn(client, 'listPuzzles').mockResolvedValue([
-      { id: 'level_1', name: 'Lvl 1', difficulty: 'Easy', N: 2, K: 1 },
+      {
+        id: 'level_1',
+        name: 'Lvl 1',
+        difficulty: 'Easy',
+        N: 2,
+        K: 1,
+        L: 4,
+        waypoints: [[0, 0]],
+        walls: [],
+        blocked: [],
+      },
     ])
     vi.spyOn(client, 'listVariants').mockResolvedValue([
       { name: 'zipmould-uni-positive', config_path: 'x', defaults: {} },
@@ -125,14 +197,10 @@ describe('ConfigPanel', () => {
     await wrapper.vm.$nextTick()
 
     expect(wrapper.text()).not.toContain('Single shared pheromone field')
-    await wrapper
-      .find('button[aria-label="zipmould-uni-positive description"]')
-      .trigger('focus')
+    await wrapper.find('button[aria-label="zipmould-uni-positive description"]').trigger('focus')
     await wrapper.vm.$nextTick()
     expect(document.body.textContent).toContain('Single shared pheromone field')
-    await wrapper
-      .find('button[aria-label="zipmould-strat-signed description"]')
-      .trigger('focus')
+    await wrapper.find('button[aria-label="zipmould-strat-signed description"]').trigger('focus')
     await wrapper.vm.$nextTick()
     expect(document.body.textContent).toContain('Separate pheromone fields per waypoint segment')
   })
@@ -141,6 +209,8 @@ describe('ConfigPanel', () => {
     const client = new ApiClient()
     vi.spyOn(client, 'listPuzzles').mockResolvedValue(puzzles)
     vi.spyOn(client, 'listVariants').mockResolvedValue(variants)
+    const traceStore = useTraceStore()
+    traceStore.set('old', fakeTrace)
 
     const wrapper = mount(ConfigPanel, { props: { client }, attachTo: document.body })
     await flush()
@@ -160,8 +230,29 @@ describe('ConfigPanel', () => {
     await wrapper.vm.$nextTick()
 
     expect(useRunStore().puzzleId).toBe('level_10')
+    expect(traceStore.trace).toBeNull()
     expect(document.body.querySelector('[role="dialog"]')).toBeNull()
     expect(wrapper.text()).toContain('level_10')
+  })
+
+  it('selects a random puzzle from the icon button and clears the current trace', async () => {
+    const client = new ApiClient()
+    vi.spyOn(client, 'listPuzzles').mockResolvedValue(puzzles)
+    vi.spyOn(client, 'listVariants').mockResolvedValue(variants)
+    vi.spyOn(Math, 'random').mockReturnValue(0.8)
+    const traceStore = useTraceStore()
+    traceStore.set('old', fakeTrace)
+
+    const wrapper = mount(ConfigPanel, { props: { client }, attachTo: document.body })
+    await flush()
+
+    const button = wrapper.get('[data-test="random-puzzle"]')
+    expect(button.attributes('title')).toBe('Select random puzzle')
+    expect(button.find('svg').exists()).toBe(true)
+    await button.trigger('click')
+
+    expect(useRunStore().puzzleId).toBe('bonus_a')
+    expect(traceStore.trace).toBeNull()
   })
 
   it('filters picker results by text, difficulty, size, and waypoint count', async () => {
@@ -193,7 +284,9 @@ describe('ConfigPanel', () => {
 
     difficulty.value = ''
     difficulty.dispatchEvent(new Event('change'))
-    const size = document.body.querySelector('[data-test="puzzle-size-filter"]') as HTMLSelectElement
+    const size = document.body.querySelector(
+      '[data-test="puzzle-size-filter"]',
+    ) as HTMLSelectElement
     size.value = '8'
     size.dispatchEvent(new Event('change'))
     await wrapper.vm.$nextTick()
@@ -227,21 +320,21 @@ describe('ConfigPanel', () => {
     await wrapper.vm.$nextTick()
 
     expect(text('[role="dialog"]')).toContain('No puzzles match')
-    ;(document.body.querySelector('[data-test="clear-puzzle-filters"]') as HTMLButtonElement).click()
+    ;(
+      document.body.querySelector('[data-test="clear-puzzle-filters"]') as HTMLButtonElement
+    ).click()
     await wrapper.vm.$nextTick()
     expect(document.body.querySelectorAll('[data-test="puzzle-option"]')).toHaveLength(3)
   })
 
   it('hydrates valid URL params without auto-running the solver', async () => {
-    window.history.replaceState(
-      {},
-      '',
-      '/?puzzle_id=bonus_a&seed=42&variant=zipmould-strat-signed',
-    )
+    window.history.replaceState({}, '', '/?puzzle_id=bonus_a&seed=42&variant=zipmould-strat-signed')
     const client = new ApiClient()
     vi.spyOn(client, 'listPuzzles').mockResolvedValue(puzzles)
     vi.spyOn(client, 'listVariants').mockResolvedValue(variants)
-    const runSpy = vi.spyOn(client, 'runSolve').mockResolvedValue({ trace_id: 't1', trace: fakeTrace })
+    const runSpy = vi
+      .spyOn(client, 'runSolve')
+      .mockResolvedValue({ trace_id: 't1', trace: fakeTrace })
 
     mount(ConfigPanel, { props: { client }, attachTo: document.body })
     await flush()
@@ -254,11 +347,7 @@ describe('ConfigPanel', () => {
   })
 
   it('ignores invalid URL params and replaces the query with current controls', async () => {
-    window.history.replaceState(
-      {},
-      '',
-      '/?puzzle_id=missing&seed=-5&variant=unknown',
-    )
+    window.history.replaceState({}, '', '/?puzzle_id=missing&seed=-5&variant=unknown')
     const run = useRunStore()
     run.seed = 123
     const client = new ApiClient()
@@ -295,9 +384,7 @@ describe('ConfigPanel', () => {
     await wrapper.vm.$nextTick()
 
     expect(replaceSpy).toHaveBeenCalled()
-    expect(window.location.search).toBe(
-      '?puzzle_id=bonus_a&seed=987&variant=zipmould-strat-signed',
-    )
+    expect(window.location.search).toBe('?puzzle_id=bonus_a&seed=987&variant=zipmould-strat-signed')
   })
 
   it('copies the current normalized URL as a share link', async () => {

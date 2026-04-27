@@ -1,6 +1,6 @@
 <template>
   <svg
-    v-if="trace"
+    v-if="boardHeader"
     :viewBox="`0 0 ${size} ${canvasHeight}`"
     class="bg-zinc-900 w-full h-full"
     role="img"
@@ -17,8 +17,8 @@
       <rect
         v-for="(_cell, i) in baseCells"
         :key="`cell-${i}`"
-        :x="((i % trace.header.N) * cellSize)"
-        :y="(Math.floor(i / trace.header.N) * cellSize)"
+        :x="(i % boardHeader.N) * cellSize"
+        :y="Math.floor(i / boardHeader.N) * cellSize"
         :width="cellSize"
         :height="cellSize"
         fill="#18181b"
@@ -26,12 +26,12 @@
         stroke-width="0.5"
       />
     </g>
-    <g v-if="layers.pheromone" data-layer="pheromone">
+    <g v-if="showPheromone" data-layer="pheromone">
       <rect
         v-for="(_value, i) in cells"
         :key="`p-${i}`"
-        :x="((i % trace.header.N) * cellSize)"
-        :y="(Math.floor(i / trace.header.N) * cellSize)"
+        :x="(i % boardHeader.N) * cellSize"
+        :y="Math.floor(i / boardHeader.N) * cellSize"
         :width="cellSize"
         :height="cellSize"
         :fill="cells[i]"
@@ -46,10 +46,10 @@
       />
     </g>
     <rect
-      v-if="hoveredPheromoneCell !== null"
+      v-if="showPheromone && hoveredPheromoneCell !== null"
       data-layer="pheromone-hover"
-      :x="((hoveredPheromoneCell % trace.header.N) * cellSize)"
-      :y="(Math.floor(hoveredPheromoneCell / trace.header.N) * cellSize)"
+      :x="(hoveredPheromoneCell % boardHeader.N) * cellSize"
+      :y="Math.floor(hoveredPheromoneCell / boardHeader.N) * cellSize"
       :width="cellSize"
       :height="cellSize"
       :fill="cells[hoveredPheromoneCell]"
@@ -60,7 +60,7 @@
     />
     <g data-layer="blocked">
       <rect
-        v-for="(cell, i) in trace.header.blocked"
+        v-for="(cell, i) in boardHeader.blocked"
         :key="`blocked-${i}`"
         :x="cell[1] * cellSize"
         :y="cell[0] * cellSize"
@@ -71,7 +71,7 @@
         stroke-width="1"
       />
       <path
-        v-for="(cell, i) in trace.header.blocked"
+        v-for="(cell, i) in boardHeader.blocked"
         :key="`blocked-x-${i}`"
         :d="blockedHatchPath(cell)"
         fill="none"
@@ -80,9 +80,9 @@
         opacity="0.75"
       />
     </g>
-    <g v-if="layers.walls" data-layer="walls">
+    <g v-if="showWalls" data-layer="walls">
       <line
-        v-for="(w, i) in trace.header.walls"
+        v-for="(w, i) in boardHeader.walls"
         :key="`wall-core-${i}`"
         :x1="wallLine(w).x1"
         :y1="wallLine(w).y1"
@@ -99,7 +99,7 @@
         @pointerleave="hideTooltip"
       />
     </g>
-    <g v-if="layers.bestPath" data-layer="best-path">
+    <g v-if="showBestPath" data-layer="best-path">
       <polyline
         :points="bestPathPoints"
         fill="none"
@@ -115,7 +115,7 @@
         @pointerleave="hideTooltip"
       />
     </g>
-    <g v-if="layers.walkers" data-layer="walkers">
+    <g v-if="showWalkers" data-layer="walkers">
       <g
         v-for="w in walkers"
         :key="`w-${w.id}`"
@@ -138,9 +138,9 @@
         </text>
       </g>
     </g>
-    <g v-if="layers.waypoints" data-layer="waypoints">
+    <g v-if="showWaypoints" data-layer="waypoints">
       <g
-        v-for="(wp, i) in trace.header.waypoints"
+        v-for="(wp, i) in boardHeader.waypoints"
         :key="`wp-${i}`"
         class="waypoint-marker"
         :transform="`translate(${cellCenterX(wp)} ${cellCenterY(wp)})`"
@@ -174,7 +174,7 @@
       </g>
     </g>
     <g
-      v-if="layers.pheromone"
+      v-if="showPheromone"
       data-layer="pheromone-legend"
       :transform="`translate(${legend.x} ${legend.y})`"
     >
@@ -185,9 +185,7 @@
         stroke="#3f3f46"
         stroke-width="0.75"
       />
-      <text :x="0" y="-5" fill="#d4d4d8" font-size="10" font-weight="700">
-        pheromone
-      </text>
+      <text :x="0" y="-5" fill="#d4d4d8" font-size="10" font-weight="700">pheromone</text>
       <text :x="0" :y="legend.height + 11" fill="#a1a1aa" font-size="9">
         {{ formatLegendValue(tauBounds.min) }}
       </text>
@@ -202,26 +200,17 @@
       </text>
     </g>
     <g
-      v-if="layers.walkers"
+      v-if="showWalkers"
       data-layer="walker-legend"
       :transform="`translate(${walkerLegend.x} ${walkerLegend.y})`"
     >
-      <text :x="0" y="-5" fill="#d4d4d8" font-size="10" font-weight="700">
-        walkers
-      </text>
+      <text :x="0" y="-5" fill="#d4d4d8" font-size="10" font-weight="700">walkers</text>
       <g
         v-for="(item, i) in walkerLegendItems"
         :key="item.status"
         :transform="`translate(${i * walkerLegend.itemWidth} 0)`"
       >
-        <circle
-          :cx="5"
-          :cy="4"
-          :r="4"
-          :fill="item.color"
-          stroke="#3f3f46"
-          stroke-width="0.75"
-        />
+        <circle :cx="5" :cy="4" :r="4" :fill="item.color" stroke="#3f3f46" stroke-width="0.75" />
         <text x="14" y="7" fill="#a1a1aa" font-size="9">
           {{ item.label }}
         </text>
@@ -247,11 +236,13 @@ import { computed, nextTick, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTraceStore } from '../stores/trace'
 import { usePlaybackStore } from '../stores/playback'
+import { useRunStore } from '../stores/run'
 import { useTraceReplay } from '../composables/useTraceReplay'
-import type { TraceWall, WalkerSnapshot, WalkerStatus } from '../api/types'
+import type { TraceHeader, TraceWall, WalkerSnapshot, WalkerStatus } from '../api/types'
 
 const traceStore = useTraceStore()
 const playback = usePlaybackStore()
+const run = useRunStore()
 const { trace } = storeToRefs(traceStore)
 const { layers, index } = storeToRefs(playback)
 
@@ -300,9 +291,31 @@ const palette = {
   walkerComplete: '#00e755',
 } as const
 
-const cellSize = computed(() => (trace.value ? size / trace.value.header.N : 0))
+const selectedPuzzle = computed(() => run.puzzles.find((puzzle) => puzzle.id === run.puzzleId))
+
+const boardHeader = computed<TraceHeader | null>(() => {
+  if (trace.value) return trace.value.header
+  const puzzle = selectedPuzzle.value
+  if (!puzzle) return null
+  return {
+    N: puzzle.N,
+    K: puzzle.K,
+    L: puzzle.L,
+    waypoints: puzzle.waypoints,
+    walls: puzzle.walls,
+    blocked: puzzle.blocked,
+  }
+})
+
+const showPheromone = computed(() => Boolean(trace.value && layers.value.pheromone))
+const showWalkers = computed(() => Boolean(trace.value && layers.value.walkers))
+const showBestPath = computed(() => Boolean(trace.value && layers.value.bestPath))
+const showWalls = computed(() => Boolean(layers.value.walls))
+const showWaypoints = computed(() => Boolean(layers.value.waypoints))
+
+const cellSize = computed(() => (boardHeader.value ? size / boardHeader.value.N : 0))
 const baseCells = computed(() => {
-  const n = trace.value?.header.N ?? 0
+  const n = boardHeader.value?.N ?? 0
   return Array.from({ length: n * n })
 })
 
@@ -379,7 +392,7 @@ const cells = computed<string[]>(() => {
 })
 
 function pheromoneTooltip(index: number): string {
-  const n = trace.value?.header.N ?? 0
+  const n = boardHeader.value?.N ?? 0
   const row = n > 0 ? Math.floor(index / n) : 0
   const col = n > 0 ? index % n : 0
   return `Pheromone at (${row}, ${col}): ${formatPheromoneValue(cellPheromones.value[index] ?? 0)}`
@@ -407,7 +420,9 @@ const bestPathStroke = computed(() => {
 
 const bestPathTooltip = computed(() => {
   if (!isLastFrame.value) return 'Best path'
-  return trace.value?.footer.solved ? 'Best path: solver succeeded' : 'Best path: solver did not succeed'
+  return trace.value?.footer.solved
+    ? 'Best path: solver succeeded'
+    : 'Best path: solver did not succeed'
 })
 
 function walkerTooltip(walker: WalkerSnapshot): string {

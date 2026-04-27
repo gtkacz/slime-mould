@@ -17,4 +17,7 @@ def test_puzzles_list_has_expected_fields() -> None:
     items = resp.json()
     assert isinstance(items, list) and items
     sample = items[0]
-    assert {"id", "name", "difficulty", "N", "K"} <= sample.keys()
+    assert {"id", "name", "difficulty", "N", "K", "L", "waypoints", "walls", "blocked"} <= sample.keys()
+    assert isinstance(sample["waypoints"], list)
+    assert isinstance(sample["walls"], list)
+    assert isinstance(sample["blocked"], list)

@@ -3,39 +3,60 @@
     <h2 class="text-sm uppercase tracking-wide text-zinc-400">Run config</h2>
     <div class="space-y-1">
       <span class="text-xs">Puzzle</span>
-      <button
-        type="button"
-        data-test="open-puzzle-picker"
-        class="w-full rounded bg-zinc-800 px-2 py-2 text-left transition hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
-        @click="pickerOpen = true"
-      >
-        <span v-if="selectedPuzzle" class="block min-w-0">
-          <span class="flex items-center gap-2 text-xs text-zinc-300">
-            <span class="block truncate text-sm">{{ selectedPuzzle.name }}</span>
-            <span :class="difficultyChipClass(selectedPuzzle.difficulty)">
+      <div class="flex items-stretch gap-1.5">
+        <button
+          type="button"
+          data-test="open-puzzle-picker"
+          class="min-w-0 flex-1 rounded bg-zinc-800 px-2 py-2 text-left transition hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+          @click="pickerOpen = true"
+        >
+          <span v-if="selectedPuzzle" class="block min-w-0">
+            <span class="flex items-center gap-2 text-xs text-zinc-300">
+              <span class="block truncate text-sm">{{ selectedPuzzle.name }}</span>
+              <span :class="difficultyChipClass(selectedPuzzle.difficulty)">
                 {{ selectedPuzzle.difficulty }}
+              </span>
+            </span>
+            <span class="mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-zinc-400">
+              <span class="truncate">{{ selectedPuzzle.id }}</span>
             </span>
           </span>
-          <span class="mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-zinc-400">
-            <span class="truncate">{{ selectedPuzzle.id }}</span>
-          </span>
-        </span>
-        <span v-else class="text-sm text-zinc-400">Choose puzzle</span>
-      </button>
+          <span v-else class="text-sm text-zinc-400">Choose puzzle</span>
+        </button>
+        <button
+          type="button"
+          data-test="random-puzzle"
+          class="grid w-10 shrink-0 place-items-center rounded bg-zinc-800 text-zinc-200 transition hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 disabled:opacity-50"
+          aria-label="Select random puzzle"
+          title="Select random puzzle"
+          :disabled="run.puzzles.length === 0"
+          @click="selectRandomPuzzle"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M16 3h5v5" />
+            <path d="M4 20 21 3" />
+            <path d="M21 16v5h-5" />
+            <path d="M15 15 21 21" />
+            <path d="M4 4l5 5" />
+          </svg>
+        </button>
+      </div>
     </div>
     <fieldset class="space-y-1">
       <legend class="text-xs">Variant</legend>
-      <label
-        v-for="v in run.variants"
-        :key="v.name"
-        :class="variantRowClass(v.name)"
-      >
+      <label v-for="v in run.variants" :key="v.name" :class="variantRowClass(v.name)">
         <input v-model="run.variant" type="radio" :value="v.name" />
         <span class="flex-1">{{ v.name }}</span>
-        <HelpTooltip
-          :label="`${v.name} description`"
-          :text="variantDescription(v.name)"
-        />
+        <HelpTooltip :label="`${v.name} description`" :text="variantDescription(v.name)" />
       </label>
     </fieldset>
     <label class="block">
@@ -58,7 +79,9 @@
     </button>
 
     <details>
-      <summary class="cursor-pointer text-xs text-zinc-400 transition hover:text-zinc-100">Advanced</summary>
+      <summary class="cursor-pointer text-xs text-zinc-400 transition hover:text-zinc-100">
+        Advanced
+      </summary>
       <div class="mt-2 space-y-1">
         <div
           v-for="param in advancedParams"
@@ -90,7 +113,7 @@
       :open="pickerOpen"
       :puzzles="run.puzzles"
       @close="pickerOpen = false"
-      @select="run.puzzleId = $event"
+      @select="selectPuzzle"
     />
   </section>
 </template>
@@ -121,8 +144,10 @@ const selectedPuzzle = computed(() => run.puzzles.find((puzzle) => puzzle.id ===
 function difficultyChipClass(difficulty: string): string {
   const normalized = difficulty.toLowerCase()
   const base = 'rounded-xl px-2 py-0.5 text-[11px] font-medium ring-1'
-  if (normalized.includes('easy')) return `${base} bg-emerald-500/15 text-emerald-200 ring-emerald-400/25`
-  if (normalized.includes('medium')) return `${base} bg-amber-500/15 text-amber-200 ring-amber-400/25`
+  if (normalized.includes('easy'))
+    return `${base} bg-emerald-500/15 text-emerald-200 ring-emerald-400/25`
+  if (normalized.includes('medium'))
+    return `${base} bg-amber-500/15 text-amber-200 ring-amber-400/25`
   if (normalized.includes('hard')) return `${base} bg-rose-500/15 text-rose-200 ring-rose-400/25`
   return `${base} bg-sky-500/15 text-sky-200 ring-sky-400/25`
 }
@@ -204,6 +229,19 @@ function onOverride(key: string, value: string): void {
   }
   const num = Number(value)
   run.overrides = { ...run.overrides, [key]: Number.isFinite(num) ? num : value }
+}
+
+function selectPuzzle(puzzleId: string): void {
+  run.puzzleId = puzzleId
+  traceStore.clear()
+  playback.setTotal(0)
+}
+
+function selectRandomPuzzle(): void {
+  if (run.puzzles.length === 0) return
+  const index = Math.floor(Math.random() * run.puzzles.length)
+  const puzzle = run.puzzles[index]
+  if (puzzle) selectPuzzle(puzzle.id)
 }
 
 async function refresh(): Promise<void> {

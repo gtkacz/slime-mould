@@ -38,6 +38,10 @@ class PuzzleSummary(BaseModel):
     difficulty: str
     N: int
     K: int
+    L: int
+    waypoints: list[list[int]]
+    walls: list[list[list[int]]]
+    blocked: list[list[int]]
 
 
 class VariantSummary(BaseModel):

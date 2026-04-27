@@ -47,7 +47,17 @@ def health() -> dict[str, str]:
 def list_puzzles() -> list[PuzzleSummary]:
     corpus = load_corpus(_CORPUS_PATH)
     return [
-        PuzzleSummary(id=pz.id, name=pz.name, difficulty=str(pz.difficulty), N=pz.N, K=pz.K)
+        PuzzleSummary(
+            id=pz.id,
+            name=pz.name,
+            difficulty=str(pz.difficulty),
+            N=pz.N,
+            K=pz.K,
+            L=pz.L(),
+            waypoints=[[r, c] for r, c in pz.waypoints],
+            walls=[[[a[0], a[1]], [b[0], b[1]]] for a, b in sorted(pz.walls)],
+            blocked=[[r, c] for r, c in sorted(pz.blocked)],
+        )
         for pz in corpus.values()
     ]
 

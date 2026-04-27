@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import GridCanvas from '../GridCanvas.vue'
 import { useTraceStore } from '../../stores/trace'
 import { usePlaybackStore } from '../../stores/playback'
+import { useRunStore } from '../../stores/run'
 import type { Trace } from '../../api/types'
 
 const tinyTrace: Trace = {
@@ -63,6 +64,46 @@ describe('GridCanvas', () => {
     expect(wrapper.find('[data-layer="best-path"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="walkers"]').exists()).toBe(true)
     expect(wrapper.find('[data-layer="waypoints"]').exists()).toBe(true)
+  })
+
+  it('renders the selected puzzle as a board preview before a run exists', async () => {
+    const run = useRunStore()
+    run.puzzles = [
+      {
+        id: 'preview',
+        name: 'Preview',
+        difficulty: 'Easy',
+        N: 2,
+        K: 2,
+        L: 3,
+        waypoints: [
+          [0, 0],
+          [1, 1],
+        ],
+        walls: [
+          [
+            [0, 0],
+            [0, 1],
+          ],
+        ],
+        blocked: [[1, 0]],
+      },
+    ]
+    run.puzzleId = 'preview'
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('svg').exists()).toBe(true)
+    expect(wrapper.find('[data-layer="cells"]').exists()).toBe(true)
+    expect(wrapper.find('[data-layer="blocked"] rect').exists()).toBe(true)
+    expect(wrapper.find('[data-layer="walls"] line').exists()).toBe(true)
+    expect(wrapper.findAll('[data-layer="waypoints"] .waypoint-marker')).toHaveLength(2)
+    expect(wrapper.find('[data-layer="pheromone"]').exists()).toBe(false)
+    expect(wrapper.find('[data-layer="pheromone-legend"]').exists()).toBe(false)
+    expect(wrapper.find('[data-layer="walkers"]').exists()).toBe(false)
+    expect(wrapper.find('[data-layer="walker-legend"]').exists()).toBe(false)
+    expect(wrapper.find('[data-layer="best-path"]').exists()).toBe(false)
   })
 
   it('hides a layer when its visibility flag flips off', async () => {
@@ -275,9 +316,9 @@ describe('GridCanvas', () => {
       'hsl(173 88% 38%)',
     )
     expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#f43f5e')
-    expect(wrapper.find('[data-layer="waypoints"] .waypoint-marker-ring').attributes('stroke')).toBe(
-      '#c084fc',
-    )
+    expect(
+      wrapper.find('[data-layer="waypoints"] .waypoint-marker-ring').attributes('stroke'),
+    ).toBe('#c084fc')
     expect(wrapper.find('[data-layer="walls"] line').attributes('stroke')).toBe('#ff3f14')
     expect(wrapper.find('[data-layer="walkers"] circle').attributes('fill')).toBe('#22c55e')
   })

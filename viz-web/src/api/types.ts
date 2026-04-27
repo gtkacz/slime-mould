@@ -63,6 +63,10 @@ export interface PuzzleSummary {
   difficulty: string
   N: number
   K: number
+  L: number
+  waypoints: [number, number][]
+  walls: TraceWall[]
+  blocked: [number, number][]
 }
 
 export interface VariantSummary {
