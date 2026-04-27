@@ -130,6 +130,34 @@ describe('ConfigPanel', () => {
     expect(store.traceId).toBe('t1')
   })
 
+  it('shows a spinning icon while a run is submitting', async () => {
+    const client = new ApiClient()
+    vi.spyOn(client, 'listPuzzles').mockResolvedValue([
+      {
+        id: 'level_1',
+        name: 'Lvl 1',
+        difficulty: 'Easy',
+        N: 2,
+        K: 1,
+        L: 4,
+        waypoints: [[0, 0]],
+        walls: [],
+        blocked: [],
+      },
+    ])
+    vi.spyOn(client, 'listVariants').mockResolvedValue([
+      { name: 'zipmould-uni-positive', config_path: 'x', defaults: {} },
+    ])
+
+    const wrapper = mount(ConfigPanel, { props: { client } })
+    await flush()
+    useRunStore().submitting = true
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.get('[data-test="run"]').text()).toContain('Solving…')
+    expect(wrapper.get('[data-test="run-spinner"]').classes()).toContain('animate-spin')
+  })
+
   it('renders math-like advanced variable labels without changing input text', async () => {
     const client = new ApiClient()
     vi.spyOn(client, 'listPuzzles').mockResolvedValue([
