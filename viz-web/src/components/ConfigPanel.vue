@@ -64,16 +64,49 @@
         <HelpTooltip :label="`${v.name} description`" :text="variantDescription(v.name)" />
       </label>
     </fieldset>
-    <label class="block">
-      <span class="text-xs">Seed</span>
-      <input
-        v-model.number="run.seed"
-        data-test="seed-input"
-        type="number"
-        min="0"
-        class="w-full bg-zinc-800 rounded px-2 py-1"
-      />
-    </label>
+    <div class="space-y-1">
+      <span :id="seedLabelId" class="text-xs">Seed</span>
+      <div class="flex items-stretch gap-1.5">
+        <input
+          v-model.number="run.seed"
+          data-test="seed-input"
+          type="number"
+          min="0"
+          :aria-labelledby="seedLabelId"
+          class="min-w-0 flex-1 rounded bg-zinc-800 px-2 py-1 text-sm tabular-nums transition hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+        />
+        <button
+          ref="randomSeedButton"
+          type="button"
+          data-test="random-seed"
+          class="grid w-9 shrink-0 place-items-center rounded bg-zinc-800 text-zinc-200 transition hover:bg-zinc-700 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 disabled:opacity-50"
+          aria-label="Randomize seed"
+          :aria-describedby="randomSeedTooltipOpen ? randomSeedTooltipId : undefined"
+          @mouseenter="randomSeedTooltipOpen = true"
+          @mouseleave="randomSeedTooltipOpen = false"
+          @focus="randomSeedTooltipOpen = true"
+          @blur="randomSeedTooltipOpen = false"
+          @click="randomizeSeed"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M16 3h5v5" />
+            <path d="M4 20 21 3" />
+            <path d="M21 16v5h-5" />
+            <path d="M15 15 21 21" />
+            <path d="M4 4l5 5" />
+          </svg>
+        </button>
+      </div>
+    </div>
     <button
       type="button"
       data-test="share-link"
@@ -131,6 +164,16 @@
       >
         Select random puzzle
       </div>
+      <div
+        v-if="randomSeedTooltipOpen"
+        :id="randomSeedTooltipId"
+        ref="randomSeedTooltip"
+        role="tooltip"
+        class="z-50 max-w-64 rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-xs leading-snug text-zinc-100 shadow"
+        :style="randomSeedTooltipStyles"
+      >
+        Randomize seed
+      </div>
     </Teleport>
   </section>
 </template>
@@ -160,10 +203,24 @@ const randomPuzzleButton = ref<HTMLElement | null>(null)
 const randomPuzzleTooltip = ref<HTMLElement | null>(null)
 const randomPuzzleTooltipOpen = ref(false)
 const randomPuzzleTooltipId = `random-puzzle-tooltip-${Math.random().toString(36).slice(2)}`
+const randomSeedButton = ref<HTMLElement | null>(null)
+const randomSeedTooltip = ref<HTMLElement | null>(null)
+const randomSeedTooltipOpen = ref(false)
+const seedLabelId = `seed-label-${Math.random().toString(36).slice(2)}`
+const randomSeedTooltipId = `random-seed-tooltip-${Math.random().toString(36).slice(2)}`
 
 const { floatingStyles: randomPuzzleTooltipStyles } = useFloating(
   randomPuzzleButton,
   randomPuzzleTooltip,
+  {
+    placement: 'right',
+    whileElementsMounted: autoUpdate,
+    middleware: [offset(8), flip(), shift({ padding: 8 })],
+  },
+)
+const { floatingStyles: randomSeedTooltipStyles } = useFloating(
+  randomSeedButton,
+  randomSeedTooltip,
   {
     placement: 'right',
     whileElementsMounted: autoUpdate,
@@ -272,6 +329,10 @@ function selectRandomPuzzle(): void {
   const index = Math.floor(Math.random() * run.puzzles.length)
   const puzzle = run.puzzles[index]
   if (puzzle) selectPuzzle(puzzle.id)
+}
+
+function randomizeSeed(): void {
+  run.seed = Math.floor(Math.random() * 1e9)
 }
 
 watch(

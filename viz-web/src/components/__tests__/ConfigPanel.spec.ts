@@ -259,6 +259,29 @@ describe('ConfigPanel', () => {
     expect(traceStore.trace).toBeNull()
   })
 
+  it('randomizes the seed from the seed selector icon button', async () => {
+    const client = new ApiClient()
+    vi.spyOn(client, 'listPuzzles').mockResolvedValue(puzzles)
+    vi.spyOn(client, 'listVariants').mockResolvedValue(variants)
+    vi.spyOn(Math, 'random').mockReturnValue(0.123456789)
+
+    const wrapper = mount(ConfigPanel, { props: { client }, attachTo: document.body })
+    await flush()
+
+    const button = wrapper.get('[data-test="random-seed"]')
+    expect(button.find('svg').exists()).toBe(true)
+    await button.trigger('focus')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Randomize seed')
+    await button.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(useRunStore().seed).toBe(123456789)
+    expect((wrapper.get('[data-test="seed-input"]').element as HTMLInputElement).value).toBe(
+      '123456789',
+    )
+  })
+
   it('clears a mismatched trace when the selected puzzle id changes outside picker handlers', async () => {
     const client = new ApiClient()
     vi.spyOn(client, 'listPuzzles').mockResolvedValue(puzzles)

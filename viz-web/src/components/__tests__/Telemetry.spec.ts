@@ -82,11 +82,19 @@ describe('telemetry components', () => {
     expect(w.text()).toContain('0.2')
   })
 
-  it('FooterSummary shows solved + iters + wall clock', () => {
+  it('FooterSummary shows solved + iters + wall clock descriptions', async () => {
     const w = mount(FooterSummary)
     expect(w.text().toLowerCase()).toContain('solved')
     expect(w.text()).toContain('5')
     expect(w.text()).toContain('0.012')
+    expect(w.find('button[aria-label="iterations description"]').exists()).toBe(true)
+    expect(w.find('button[aria-label="wall clock description"]').exists()).toBe(true)
+    await w.find('button[aria-label="iterations description"]').trigger('focus')
+    await w.vm.$nextTick()
+    expect(document.body.textContent).toContain('solver iterations completed')
+    await w.find('button[aria-label="wall clock description"]').trigger('focus')
+    await w.vm.$nextTick()
+    expect(document.body.textContent).toContain('Elapsed real time in seconds')
   })
 
   it('LayerToggles flips a layer flag in the playback store', async () => {
