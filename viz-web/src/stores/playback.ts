@@ -36,7 +36,14 @@ export const usePlaybackStore = defineStore('playback', () => {
   }
 
   function togglePlay(): void {
-    playing.value = !playing.value
+    if (playing.value) {
+      playing.value = false
+      return
+    }
+    if (total.value > 0 && index.value >= total.value - 1) {
+      index.value = 0
+    }
+    playing.value = true
   }
 
   function setSpeed(v: number): void {

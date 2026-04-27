@@ -38,6 +38,17 @@ describe('playback store', () => {
     expect(s.speed).toBeLessThanOrEqual(s.MAX_SPEED)
   })
 
+  it('restarts from the first frame when play is pressed at the end', () => {
+    const s = usePlaybackStore()
+    s.setTotal(3)
+    s.seek(2)
+
+    s.togglePlay()
+
+    expect(s.index).toBe(0)
+    expect(s.playing).toBe(true)
+  })
+
   it('layer visibility flags default to true and toggle', () => {
     const s = usePlaybackStore()
     expect(s.layers.pheromone).toBe(true)

@@ -100,8 +100,13 @@ const presets: readonly SpeedPreset[] = [
   { label: '0.05 fps', value: 0.05 },
   { label: '0.25 fps', value: 0.25 },
   { label: '1 fps', value: 1 },
-  { label: '4 fps', value: 4 },
-  { label: '16 fps', value: 16 },
+  { label: '5 fps', value: 5 },
+  { label: '10 fps', value: 10 },
+  { label: '15 fps', value: 15 },
+  { label: '30 fps', value: 30 },
+  { label: '45 fps', value: 45 },
+  { label: '60 fps', value: 60 },
+  { label: '120 fps', value: 120 },
 ]
 
 const presetValue = computed<string>(() => {
