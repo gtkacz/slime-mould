@@ -5,6 +5,7 @@ import type {
   RunResponse,
   VariantSummary,
 } from './types'
+import { runResponseCache } from './runCache'
 
 export class ApiError extends Error {
   readonly kind: string
@@ -55,11 +56,16 @@ export class ApiClient {
     return this.request('/variants')
   }
 
-  runSolve(req: RunRequest): Promise<RunResponse> {
-    return this.request('/runs', {
+  async runSolve(req: RunRequest): Promise<RunResponse> {
+    const cached = runResponseCache.get(req)
+    if (cached) return cached
+
+    const response = await this.request<RunResponse>('/runs', {
       method: 'POST',
       body: JSON.stringify(req),
     })
+    runResponseCache.set(req, response)
+    return response
   }
 
   async uploadTrace(file: Blob): Promise<RunResponse> {
