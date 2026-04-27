@@ -143,6 +143,10 @@ describe('GridCanvas', () => {
     expect(marker.attributes('transform')).toBe('translate(120 120)')
     expect(marker.find('circle').attributes('fill')).toBe('#22c55e')
     expect(marker.find('text').text()).toBe('0')
+
+    playback.setHoveredWalkerId(0)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-layer="walkers"] .walker-marker').classes()).toContain('is-hovered')
   })
 
   it('draws completed walkers above waypoint markers', async () => {
@@ -223,8 +227,10 @@ describe('GridCanvas', () => {
     expect(walker.attributes('aria-label')).toBe('Walker #0: alive')
     await walker.trigger('pointerenter')
     await wrapper.vm.$nextTick()
+    expect(playback.hoveredWalkerId).toBe(0)
     expect(document.body.textContent).toContain('Walker #0: alive')
     await walker.trigger('pointerleave')
+    expect(playback.hoveredWalkerId).toBeNull()
 
     const waypoint = wrapper.find('[data-layer="waypoints"] .waypoint-marker')
     expect(waypoint.attributes('aria-label')).toBe('Waypoint 1')

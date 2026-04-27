@@ -6,13 +6,35 @@
         <tr class="text-zinc-500">
           <th class="text-left">id</th>
           <th class="text-left">cell</th>
-          <th class="text-left">seg</th>
-          <th class="text-left">status</th>
+          <th class="text-left">
+            <span class="inline-flex items-center gap-1">
+              <span>seg</span>
+              <HelpTooltip
+                label="segment description"
+                text="The waypoint segment this walker is currently trying to traverse."
+              />
+            </span>
+          </th>
+          <th class="text-left">
+            <span class="inline-flex items-center gap-1">
+              <span>status</span>
+              <HelpTooltip
+                label="walker status description"
+                text="Alive walkers are still exploring. Dead-end walkers stopped after reaching a blocked route. Complete walkers reached the final waypoint."
+              />
+            </span>
+          </th>
           <th class="text-right">fitness</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="w in walkers" :key="w.id">
+        <tr
+          v-for="w in walkers"
+          :key="w.id"
+          class="hover:bg-zinc-900/70"
+          @pointerenter="playback.setHoveredWalkerId(w.id)"
+          @pointerleave="playback.setHoveredWalkerId(null)"
+        >
           <td>{{ w.id }}</td>
           <td>({{ w.cell[0] }},{{ w.cell[1] }})</td>
           <td>{{ w.segment }}</td>
@@ -30,9 +52,11 @@ import { storeToRefs } from 'pinia'
 import { useTraceStore } from '../stores/trace'
 import { usePlaybackStore } from '../stores/playback'
 import type { WalkerStatus } from '../api/types'
+import HelpTooltip from './HelpTooltip.vue'
 
 const { trace } = storeToRefs(useTraceStore())
-const { index } = storeToRefs(usePlaybackStore())
+const playback = usePlaybackStore()
+const { index } = storeToRefs(playback)
 
 const walkers = computed(() => {
   const t = trace.value

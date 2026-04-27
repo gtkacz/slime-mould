@@ -10,6 +10,7 @@ export const usePlaybackStore = defineStore('playback', () => {
   const total = ref(0)
   const playing = ref(false)
   const speed = ref(1)
+  const hoveredWalkerId = ref<number | null>(null)
   const layers = ref<Record<LayerKey, boolean>>({
     walls: true,
     pheromone: true,
@@ -58,6 +59,10 @@ export const usePlaybackStore = defineStore('playback', () => {
     layers.value[key] = !layers.value[key]
   }
 
+  function setHoveredWalkerId(id: number | null): void {
+    hoveredWalkerId.value = id
+  }
+
   return {
     MAX_SPEED,
     MIN_SPEED,
@@ -65,6 +70,7 @@ export const usePlaybackStore = defineStore('playback', () => {
     total,
     playing,
     speed,
+    hoveredWalkerId,
     layers,
     setTotal,
     seek,
@@ -72,5 +78,6 @@ export const usePlaybackStore = defineStore('playback', () => {
     togglePlay,
     setSpeed,
     toggleLayer,
+    setHoveredWalkerId,
   }
 })

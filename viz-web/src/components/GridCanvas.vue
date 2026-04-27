@@ -120,11 +120,12 @@
         v-for="w in activeWalkers"
         :key="`w-${w.id}`"
         class="walker-marker"
+        :class="{ 'is-hovered': hoveredWalkerId === w.id }"
         :transform="`translate(${cellCenterX(w.cell)} ${cellCenterY(w.cell)})`"
         :aria-label="walkerTooltip(w)"
-        @pointerenter="showPointerTooltip($event, walkerTooltip(w))"
+        @pointerenter="showWalkerTooltip($event, w)"
         @pointermove="movePointerTooltip($event)"
-        @pointerleave="hideTooltip"
+        @pointerleave="clearWalkerHover(w.id)"
       >
         <circle :r="cellSize * 0.125" :fill="walkerColor(w.status)" />
         <text
@@ -178,11 +179,12 @@
         v-for="w in completedWalkers"
         :key="`completed-w-${w.id}`"
         class="walker-marker completed-walker-marker"
+        :class="{ 'is-hovered': hoveredWalkerId === w.id }"
         :transform="`translate(${cellCenterX(w.cell)} ${cellCenterY(w.cell)})`"
         :aria-label="walkerTooltip(w)"
-        @pointerenter="showPointerTooltip($event, walkerTooltip(w))"
+        @pointerenter="showWalkerTooltip($event, w)"
         @pointermove="movePointerTooltip($event)"
-        @pointerleave="hideTooltip"
+        @pointerleave="clearWalkerHover(w.id)"
       >
         <circle
           class="completed-walker-halo"
@@ -278,7 +280,7 @@ const traceStore = useTraceStore()
 const playback = usePlaybackStore()
 const run = useRunStore()
 const { trace } = storeToRefs(traceStore)
-const { layers, index } = storeToRefs(playback)
+const { layers, index, hoveredWalkerId } = storeToRefs(playback)
 
 const replay = useTraceReplay(trace, index)
 type TooltipReference = {
@@ -483,6 +485,11 @@ function showPheromoneTooltip(event: PointerEvent, index: number): void {
   showPointerTooltip(event, pheromoneTooltip(index))
 }
 
+function showWalkerTooltip(event: PointerEvent, walker: WalkerSnapshot): void {
+  playback.setHoveredWalkerId(walker.id)
+  showPointerTooltip(event, walkerTooltip(walker))
+}
+
 function movePointerTooltip(event: PointerEvent): void {
   if (!tooltipOpen.value) return
   setPointerReference(event)
@@ -495,6 +502,13 @@ function hideTooltip(): void {
 
 function clearPheromoneHover(): void {
   hoveredPheromoneCell.value = null
+  hideTooltip()
+}
+
+function clearWalkerHover(id: number): void {
+  if (hoveredWalkerId.value === id) {
+    playback.setHoveredWalkerId(null)
+  }
   hideTooltip()
 }
 
@@ -565,7 +579,8 @@ function formatLegendValue(value: number): string {
   stroke-width: 10;
 }
 
-.walker-marker:hover circle {
+.walker-marker:hover circle,
+.walker-marker.is-hovered circle {
   filter: brightness(1.25);
   opacity: 100%;
   transform: scale(1.25);

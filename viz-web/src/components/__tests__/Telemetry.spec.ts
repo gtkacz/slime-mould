@@ -67,10 +67,23 @@ describe('telemetry components', () => {
     expect(w.findAll('sub').map((node) => node.text())).toEqual(['b', 'c'])
   })
 
-  it('WalkerTable lists walkers from the current frame', () => {
+  it('WalkerTable lists walkers from the current frame with hover and header help', async () => {
     const w = mount(WalkerTable)
+    const pb = usePlaybackStore()
     expect(w.text()).toContain('alive')
     expect(w.text()).toContain('complete')
+    expect(w.find('button[aria-label="segment description"]').exists()).toBe(true)
+    expect(w.find('button[aria-label="walker status description"]').exists()).toBe(true)
+
+    const rows = w.findAll('tbody tr')
+    await rows[0]?.trigger('pointerenter')
+    expect(pb.hoveredWalkerId).toBe(0)
+    await rows[0]?.trigger('pointerleave')
+    expect(pb.hoveredWalkerId).toBeNull()
+
+    await w.find('button[aria-label="walker status description"]').trigger('focus')
+    await w.vm.$nextTick()
+    expect(document.body.textContent).toContain('Alive walkers are still exploring')
   })
 
   it('FrameMeta shows current t and V_b/V_c', () => {

@@ -55,4 +55,13 @@ describe('playback store', () => {
     s.toggleLayer('pheromone')
     expect(s.layers.pheromone).toBe(false)
   })
+
+  it('tracks the hovered walker id', () => {
+    const s = usePlaybackStore()
+    expect(s.hoveredWalkerId).toBeNull()
+    s.setHoveredWalkerId(4)
+    expect(s.hoveredWalkerId).toBe(4)
+    s.setHoveredWalkerId(null)
+    expect(s.hoveredWalkerId).toBeNull()
+  })
 })
