@@ -1,0 +1,10 @@
+__ZIPMOULD_API_DOMAIN__ {
+	@bad_api_origin {
+		path /api/*
+		not path /api/health
+		not header Origin __ZIPMOULD_ALLOWED_ORIGIN__
+	}
+	respond @bad_api_origin 403
+
+	reverse_proxy 127.0.0.1:8000
+}

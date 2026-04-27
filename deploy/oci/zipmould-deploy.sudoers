@@ -1,0 +1,1 @@
+zipmould ALL=NOPASSWD: /bin/systemctl restart zipmould-viz, /bin/systemctl status zipmould-viz, /bin/systemctl reload caddy, /bin/systemctl status caddy

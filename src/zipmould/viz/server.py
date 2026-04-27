@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import os
 from http import HTTPStatus
 from pathlib import Path
 from typing import cast
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -17,6 +19,12 @@ from zipmould.viz.routes import router as api_router
 
 _TRACE_CACHE_CAPACITY = 8
 _STATIC_DIR = Path(__file__).parent / "static"
+_ALLOWED_ORIGINS_ENV = "ZIPMOULD_ALLOWED_ORIGINS"
+
+
+def _allowed_origins_from_env() -> list[str]:
+    raw = os.environ.get(_ALLOWED_ORIGINS_ENV, "")
+    return [origin.strip().rstrip("/") for origin in raw.split(",") if origin.strip()]
 
 
 def _http_exception_handler(_request: Request, exc: HTTPException) -> JSONResponse:
@@ -48,6 +56,15 @@ def _generic_handler(_request: Request, exc: Exception) -> JSONResponse:
 
 def create_app() -> FastAPI:
     app = FastAPI(title="ZipMould Visualizer", version=ZIPMOULD_VERSION)
+    allowed_origins = _allowed_origins_from_env()
+    if allowed_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=allowed_origins,
+            allow_credentials=False,
+            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_headers=["Content-Type"],
+        )
     app.state.trace_cache = TraceCache(capacity=_TRACE_CACHE_CAPACITY)
     app.include_router(api_router)
     app.add_exception_handler(HTTPException, _http_exception_handler)  # pyright: ignore[reportArgumentType]

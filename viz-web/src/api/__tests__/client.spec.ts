@@ -18,6 +18,18 @@ describe('ApiClient', () => {
     expect(url.endsWith('/api/health')).toBe(true)
   })
 
+  it('uses an explicit API base URL', async () => {
+    const fetchMock = vi.fn<() => Promise<Response>>(
+      async () => new Response(JSON.stringify({ status: 'ok', version: '0.1.0' })),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const client = new ApiClient('https://api.example.com/api')
+    await client.health()
+    expect((fetchMock.mock.calls[0] as unknown[])[0]).toBe(
+      'https://api.example.com/api/health',
+    )
+  })
+
   it('throws ApiError with kind+detail on non-2xx', async () => {
     const body = JSON.stringify({ kind: 'puzzle_not_found', detail: 'no-such' })
     const fetchMock = vi.fn<() => Promise<Response>>(

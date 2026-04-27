@@ -78,4 +78,6 @@ export class ApiClient {
   }
 }
 
-export const api = new ApiClient()
+const apiBase = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || '/api'
+
+export const api = new ApiClient(apiBase)
