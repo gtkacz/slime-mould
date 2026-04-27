@@ -58,7 +58,7 @@ curl http://127.0.0.1:8000/api/health
 
 ## Cloudflare DNS
 
-Create a proxied DNS record:
+Create a proxied DNS record for the API:
 
 ```text
 Type: A
@@ -67,7 +67,32 @@ Content: YOUR_OCI_PUBLIC_IP
 Proxy status: Proxied
 ```
 
+Create a DNS record for the frontend GitHub Pages site:
+
+```text
+Type: CNAME
+Name: app
+Content: YOUR_GITHUB_USER.github.io
+Proxy status: DNS only
+```
+
 Use `SSL/TLS > Overview > Full (strict)`.
+
+## GitHub Pages Frontend Deploy
+
+The workflow is `.github/workflows/deploy-frontend-pages.yml`.
+
+In repository settings, set `Pages > Build and deployment > Source` to
+`GitHub Actions`. The built artifact includes `viz-web/public/CNAME`, so Pages
+serves it at `https://app.slime-mould.tkacz.dev.br`.
+
+By default the frontend is built with:
+
+```text
+VITE_API_BASE_URL=https://api.slime-mould.tkacz.dev.br/api
+```
+
+Set a repository variable named `VITE_API_BASE_URL` to override that URL.
 
 ## Firewall
 
