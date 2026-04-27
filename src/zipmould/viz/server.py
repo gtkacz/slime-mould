@@ -15,13 +15,18 @@ from fastapi.staticfiles import StaticFiles
 from starlette.responses import Response
 from starlette.types import Scope
 
-from zipmould.viz.cache import TraceCache
+from zipmould.viz.cache import RunDiskCache, TraceCache
 from zipmould.viz.routes import ZIPMOULD_VERSION
 from zipmould.viz.routes import router as api_router
 
 _TRACE_CACHE_CAPACITY = 8
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _STATIC_DIR = Path(__file__).parent / "static"
 _ALLOWED_ORIGINS_ENV = "ZIPMOULD_ALLOWED_ORIGINS"
+_ENV_ENV = "ZIPMOULD_ENV"
+_RUN_CACHE_DIR_ENV = "ZIPMOULD_RUN_CACHE_DIR"
+_DEPLOY_ID_ENV = "ZIPMOULD_DEPLOY_ID"
+_PROD_ENV_VALUES = {"prod", "production"}
 
 
 class CacheBustingStaticFiles(StaticFiles):
@@ -50,6 +55,37 @@ class CacheBustingStaticFiles(StaticFiles):
 def _allowed_origins_from_env() -> list[str]:
     raw = os.environ.get(_ALLOWED_ORIGINS_ENV, "")
     return [origin.strip().rstrip("/") for origin in raw.split(",") if origin.strip()]
+
+
+def _is_prod_mode() -> bool:
+    return os.environ.get(_ENV_ENV, "").strip().lower() in _PROD_ENV_VALUES
+
+
+def _run_cache_root_from_env() -> Path:
+    raw = os.environ.get(_RUN_CACHE_DIR_ENV, "")
+    return Path(raw).expanduser() if raw else _REPO_ROOT / ".zipmould-run-cache"
+
+
+def _deploy_id_from_env() -> str:
+    explicit = os.environ.get(_DEPLOY_ID_ENV, "").strip()
+    if explicit:
+        return explicit
+    git_sha = _read_git_sha(_REPO_ROOT)
+    if git_sha:
+        return git_sha
+    return ZIPMOULD_VERSION
+
+
+def _read_git_sha(root: Path) -> str | None:
+    head_path = root / ".git" / "HEAD"
+    try:
+        head = head_path.read_text(encoding="utf-8").strip()
+        if head.startswith("ref: "):
+            ref_path = root / ".git" / head.removeprefix("ref: ").strip()
+            return ref_path.read_text(encoding="utf-8").strip()
+        return head
+    except OSError:
+        return None
 
 
 def _http_exception_handler(_request: Request, exc: HTTPException) -> JSONResponse:
@@ -91,6 +127,9 @@ def create_app() -> FastAPI:
             allow_headers=["Content-Type"],
         )
     app.state.trace_cache = TraceCache(capacity=_TRACE_CACHE_CAPACITY)
+    app.state.run_cache = (
+        RunDiskCache(root=_run_cache_root_from_env(), deploy_id=_deploy_id_from_env()) if _is_prod_mode() else None
+    )
     app.include_router(api_router)
     app.add_exception_handler(HTTPException, _http_exception_handler)  # pyright: ignore[reportArgumentType]
     app.add_exception_handler(RequestValidationError, _validation_handler)  # pyright: ignore[reportArgumentType]

@@ -15,6 +15,7 @@ from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 
 from zipmould.io.puzzles import load_corpus
+from zipmould.viz.cache import RunDiskCache
 from zipmould.viz.runner import RunnerError, run_solve
 from zipmould.viz.schemas import ALLOWED_VARIANTS, PuzzleSummary, RunRequest, RunResponse, VariantSummary
 from zipmould.viz.trace_codec import read_cbor_bytes, trace_to_jsonable
@@ -89,6 +90,13 @@ def post_run(req: RunRequest, request: Request) -> RunResponse:
             detail={"kind": "puzzle_not_found", "detail": f"unknown puzzle {req.puzzle_id!r}"},
         )
     puzzle = corpus[req.puzzle_id]
+    run_cache = _run_cache_for(request, req)
+    if run_cache is not None:
+        cached = run_cache.get(req.puzzle_id, req.variant, req.seed)
+        if cached is not None:
+            trace_id = uuid.uuid4().hex
+            request.app.state.trace_cache.put(trace_id, cached.cbor_bytes)
+            return RunResponse(trace_id=trace_id, trace=cached.trace)
     try:
         trace_dict, cbor_bytes = run_solve(
             puzzle=puzzle,
@@ -103,7 +111,18 @@ def post_run(req: RunRequest, request: Request) -> RunResponse:
         ) from exc
     trace_id = uuid.uuid4().hex
     request.app.state.trace_cache.put(trace_id, cbor_bytes)
+    if run_cache is not None:
+        run_cache.put(req.puzzle_id, req.variant, req.seed, trace_dict, cbor_bytes)
     return RunResponse(trace_id=trace_id, trace=trace_dict)
+
+
+def _run_cache_for(request: Request, req: RunRequest) -> RunDiskCache | None:
+    if req.config_overrides:
+        return None
+    run_cache = request.app.state.run_cache
+    if isinstance(run_cache, RunDiskCache):
+        return run_cache
+    return None
 
 
 @router.post("/traces/upload", response_model=RunResponse)
