@@ -1,41 +1,41 @@
-name: Deploy backend to OCI
+# name: Deploy backend to OCI
 
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+# on:
+#   push:
+#     branches: [main]
+#   workflow_dispatch:
 
-concurrency:
-  group: deploy-backend-oci
-  cancel-in-progress: true
+# concurrency:
+#   group: deploy-backend-oci
+#   cancel-in-progress: true
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
 
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+#       - name: Install uv
+#         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-      - name: Run backend tests
-        run: uv run pytest tests/viz
+#       - name: Run backend tests
+#         run: uv run pytest tests/viz
 
-      - name: Configure SSH
-        run: |
-          set -euo pipefail
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.OCI_SSH_KEY }}" > ~/.ssh/oci_deploy_key
-          chmod 600 ~/.ssh/oci_deploy_key
-          ssh-keyscan -H "${{ secrets.OCI_HOST }}" >> ~/.ssh/known_hosts
+#       - name: Configure SSH
+#         run: |
+#           set -euo pipefail
+#           install -m 700 -d ~/.ssh
+#           printf '%s\n' "${{ secrets.OCI_SSH_KEY }}" > ~/.ssh/oci_deploy_key
+#           chmod 600 ~/.ssh/oci_deploy_key
+#           ssh-keyscan -H "${{ secrets.OCI_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy
-        env:
-          OCI_USER: ${{ secrets.OCI_USER }}
-          OCI_HOST: ${{ secrets.OCI_HOST }}
-        run: |
-          set -euo pipefail
-          ssh -i ~/.ssh/oci_deploy_key "${OCI_USER:-zipmould}@${OCI_HOST}" \
-            'cd /opt/zipmould/slime-mould && ./deploy/oci/deploy.sh'
+#       - name: Deploy
+#         env:
+#           OCI_USER: ${{ secrets.OCI_USER }}
+#           OCI_HOST: ${{ secrets.OCI_HOST }}
+#         run: |
+#           set -euo pipefail
+#           ssh -i ~/.ssh/oci_deploy_key "${OCI_USER:-zipmould}@${OCI_HOST}" \
+#             'cd /opt/zipmould/slime-mould && ./deploy/oci/deploy.sh'
