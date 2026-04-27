@@ -2,7 +2,7 @@
   <svg
     v-if="boardHeader"
     :viewBox="`0 0 ${size} ${canvasHeight}`"
-    class="bg-zinc-900 w-full h-full"
+    class="bg-zinc-900 w-full h-full p-4"
     role="img"
     aria-label="Solver grid"
   >
@@ -117,7 +117,7 @@
     </g>
     <g v-if="showWalkers" data-layer="walkers">
       <g
-        v-for="w in walkers"
+        v-for="w in activeWalkers"
         :key="`w-${w.id}`"
         class="walker-marker"
         :transform="`translate(${cellCenterX(w.cell)} ${cellCenterY(w.cell)})`"
@@ -170,6 +170,40 @@
           :fill="palette.waypointText"
         >
           {{ i + 1 }}
+        </text>
+      </g>
+    </g>
+    <g v-if="showWalkers" data-layer="completed-walkers">
+      <g
+        v-for="w in completedWalkers"
+        :key="`completed-w-${w.id}`"
+        class="walker-marker completed-walker-marker"
+        :transform="`translate(${cellCenterX(w.cell)} ${cellCenterY(w.cell)})`"
+        :aria-label="walkerTooltip(w)"
+        @pointerenter="showPointerTooltip($event, walkerTooltip(w))"
+        @pointermove="movePointerTooltip($event)"
+        @pointerleave="hideTooltip"
+      >
+        <circle
+          class="completed-walker-halo"
+          :r="cellSize * 0.1"
+          :fill="walkerColor(w.status)"
+          opacity="0.22"
+        />
+        <circle
+          :r="cellSize * 0.1"
+          :fill="walkerColor(w.status)"
+          stroke="#f5f3ff"
+          :stroke-width="cellSize * 0.025"
+        />
+        <text
+          text-anchor="middle"
+          dominant-baseline="central"
+          :font-size="walkerLabelSize"
+          font-weight="800"
+          :fill="walkerLabelColor(w.status)"
+        >
+          {{ w.id }}
         </text>
       </g>
     </g>
@@ -471,6 +505,8 @@ const bestPathPoints = computed(() =>
 )
 
 const walkers = computed(() => replay.walkers.value)
+const activeWalkers = computed(() => walkers.value.filter((w) => w.status !== 'complete'))
+const completedWalkers = computed(() => walkers.value.filter((w) => w.status === 'complete'))
 const walkerLabelSize = computed(() => Math.max(5, Math.min(14, cellSize.value * 0.1)))
 
 const walkerLegendItems = computed(() => [
@@ -485,7 +521,7 @@ function walkerColor(status: WalkerStatus): string {
 }
 
 function walkerLabelColor(status: WalkerStatus): string {
-  return status === 'dead-end' ? '#00de38' : '#64ee9e'
+  return status === 'dead-end' ? '#00de38' : '#004b1b'
 }
 
 function formatLegendValue(value: number): string {

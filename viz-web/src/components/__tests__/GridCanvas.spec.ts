@@ -145,6 +145,39 @@ describe('GridCanvas', () => {
     expect(marker.find('text').text()).toBe('0')
   })
 
+  it('draws completed walkers above waypoint markers', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', {
+      ...tinyTrace,
+      frames: [
+        {
+          ...tinyTrace.frames[0]!,
+          walkers: [{ id: 7, cell: [1, 1], segment: 1, status: 'complete', fitness: 1 }],
+        },
+      ],
+    })
+    playback.setTotal(1)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-layer="walkers"] .walker-marker').exists()).toBe(false)
+    const completedLayer = wrapper.find('[data-layer="completed-walkers"]')
+    expect(completedLayer.exists()).toBe(true)
+    expect(completedLayer.find('.completed-walker-marker').attributes('transform')).toBe(
+      'translate(360 360)',
+    )
+    expect(completedLayer.find('.completed-walker-marker').attributes('aria-label')).toBe(
+      'Walker #7: complete',
+    )
+
+    const layers = wrapper
+      .findAll('svg > g[data-layer]')
+      .map((node) => node.attributes('data-layer'))
+    expect(layers.indexOf('completed-walkers')).toBeGreaterThan(layers.indexOf('waypoints'))
+  })
+
   it('adds grid item tooltips for visible overlays', async () => {
     const traceStore = useTraceStore()
     const playback = usePlaybackStore()
