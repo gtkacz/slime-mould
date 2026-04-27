@@ -6,14 +6,18 @@
       <button
         type="button"
         data-test="open-puzzle-picker"
-        class="w-full rounded bg-zinc-800 px-2 py-2 text-left hover:bg-zinc-700"
+        class="w-full rounded bg-zinc-800 px-2 py-2 text-left transition hover:bg-zinc-700 hover:shadow-[inset_3px_0_0_rgb(161_161_170)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
         @click="pickerOpen = true"
       >
         <span v-if="selectedPuzzle" class="block min-w-0">
           <span class="block truncate text-sm">{{ selectedPuzzle.id }}</span>
-          <span class="block truncate text-xs text-zinc-400">
-            {{ selectedPuzzle.name }} · {{ selectedPuzzle.difficulty }} · N={{ selectedPuzzle.N }}
-            K={{ selectedPuzzle.K }}
+          <span class="mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-zinc-400">
+            <span class="truncate">{{ selectedPuzzle.name }}</span>
+            <span :class="difficultyChipClass(selectedPuzzle.difficulty)">
+              {{ selectedPuzzle.difficulty }}
+            </span>
+            <span>N={{ selectedPuzzle.N }}</span>
+            <span>K={{ selectedPuzzle.K }}</span>
           </span>
         </span>
         <span v-else class="text-sm text-zinc-400">Choose puzzle</span>
@@ -47,7 +51,7 @@
     <button
       type="button"
       data-test="share-link"
-      class="w-full rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-200 hover:bg-zinc-700"
+      class="w-full rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-200 transition hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
       @click="shareLink"
     >
       Share link
@@ -75,7 +79,7 @@
 
     <button
       data-test="run"
-      class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded py-2"
+      class="w-full rounded bg-blue-600 py-2 transition hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 disabled:opacity-50"
       :disabled="run.submitting || !run.puzzleId"
       @click="submit"
     >
@@ -113,6 +117,15 @@ const pickerOpen = ref(false)
 const urlSync = useRunUrlSync(run)
 
 const selectedPuzzle = computed(() => run.puzzles.find((puzzle) => puzzle.id === run.puzzleId))
+
+function difficultyChipClass(difficulty: string): string {
+  const normalized = difficulty.toLowerCase()
+  const base = 'rounded px-2 py-0.5 text-[11px] font-medium ring-1'
+  if (normalized.includes('easy')) return `${base} bg-emerald-500/15 text-emerald-200 ring-emerald-400/25`
+  if (normalized.includes('medium')) return `${base} bg-amber-500/15 text-amber-200 ring-amber-400/25`
+  if (normalized.includes('hard')) return `${base} bg-rose-500/15 text-rose-200 ring-rose-400/25`
+  return `${base} bg-sky-500/15 text-sky-200 ring-sky-400/25`
+}
 
 const advancedParams = [
   {

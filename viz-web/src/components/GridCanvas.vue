@@ -539,8 +539,5 @@ function formatLegendValue(value: number): string {
 .walker-marker text {
   paint-order: stroke;
   pointer-events: none;
-  /* stroke: #09090b;
-  stroke-width: 1.5px;
-  stroke-linejoin: round; */
 }
 </style>

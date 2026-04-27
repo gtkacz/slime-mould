@@ -16,11 +16,23 @@
           <h3 id="puzzle-picker-title" class="text-sm font-semibold">Choose puzzle</h3>
           <button
             type="button"
-            class="rounded px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-800"
+            class="rounded p-1.5 text-zinc-300 transition hover:scale-105 hover:bg-zinc-800 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 active:scale-95"
             aria-label="Close puzzle picker"
             @click="emit('close')"
           >
-            x
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
           </button>
         </header>
 
@@ -30,7 +42,7 @@
             <input
               v-model="search"
               data-test="puzzle-search"
-              class="mt-1 w-full rounded bg-zinc-800 px-2 py-1 text-sm"
+              class="mt-1 w-full rounded bg-zinc-800 px-2 py-1 text-sm transition hover:bg-zinc-700 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-zinc-500"
               type="search"
               placeholder="Puzzle ID or name"
             />
@@ -42,7 +54,7 @@
               <select
                 v-model="difficulty"
                 data-test="puzzle-difficulty-filter"
-                class="mt-1 w-full rounded bg-zinc-800 px-2 py-1 text-sm"
+                class="mt-1 w-full rounded bg-zinc-800 px-2 py-1 text-sm transition hover:bg-zinc-700 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-zinc-500"
               >
                 <option value="">Any</option>
                 <option v-for="value in difficulties" :key="value" :value="value">
@@ -55,7 +67,7 @@
               <select
                 v-model.number="size"
                 data-test="puzzle-size-filter"
-                class="mt-1 w-full rounded bg-zinc-800 px-2 py-1 text-sm"
+                class="mt-1 w-full rounded bg-zinc-800 px-2 py-1 text-sm transition hover:bg-zinc-700 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-zinc-500"
               >
                 <option value="">Any</option>
                 <option v-for="value in sizes" :key="value" :value="value">
@@ -68,7 +80,7 @@
               <select
                 v-model.number="waypoints"
                 data-test="puzzle-waypoint-filter"
-                class="mt-1 w-full rounded bg-zinc-800 px-2 py-1 text-sm"
+                class="mt-1 w-full rounded bg-zinc-800 px-2 py-1 text-sm transition hover:bg-zinc-700 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-zinc-500"
               >
                 <option value="">Any</option>
                 <option v-for="value in waypointCounts" :key="value" :value="value">
@@ -85,7 +97,7 @@
             :key="puzzle.id"
             type="button"
             data-test="puzzle-option"
-            class="grid w-full grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-zinc-800 px-4 py-3 text-left hover:bg-zinc-800"
+            class="grid w-full grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-zinc-800 px-4 py-3 text-left transition hover:bg-zinc-800 hover:shadow-[inset_3px_0_0_rgb(161_161_170)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-zinc-500"
             @click="selectPuzzle(puzzle.id)"
           >
             <span class="min-w-0">
@@ -93,7 +105,7 @@
               <span class="block truncate text-xs text-zinc-400">{{ puzzle.id }}</span>
             </span>
             <span class="flex items-center gap-2 text-xs text-zinc-300">
-              <span>{{ puzzle.difficulty }}</span>
+              <span :class="difficultyChipClass(puzzle.difficulty)">{{ puzzle.difficulty }}</span>
               <span>N={{ puzzle.N }}</span>
               <span>K={{ puzzle.K }}</span>
             </span>
@@ -104,7 +116,7 @@
             <button
               type="button"
               data-test="clear-puzzle-filters"
-              class="rounded bg-zinc-800 px-3 py-1 text-sm hover:bg-zinc-700"
+              class="rounded bg-zinc-800 px-3 py-1 text-sm transition hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
               @click="clearFilters"
             >
               Clear filters
@@ -156,12 +168,19 @@ const sortedPuzzles = computed(() =>
 )
 
 const difficulties = computed(() =>
-  [...new Set(props.puzzles.map((puzzle) => puzzle.difficulty))].sort((a, b) =>
-    a.localeCompare(b),
-  ),
+  [...new Set(props.puzzles.map((puzzle) => puzzle.difficulty))]
 )
 const sizes = computed(() => uniqueSortedNumbers(props.puzzles.map((puzzle) => puzzle.N)))
 const waypointCounts = computed(() => uniqueSortedNumbers(props.puzzles.map((puzzle) => puzzle.K)))
+
+function difficultyChipClass(difficulty: string): string {
+  const normalized = difficulty.toLowerCase()
+  const base = 'rounded px-2 py-0.5 text-[11px] font-medium ring-1'
+  if (normalized.includes('easy')) return `${base} bg-emerald-500/15 text-emerald-200 ring-emerald-400/25`
+  if (normalized.includes('medium')) return `${base} bg-amber-500/15 text-amber-200 ring-amber-400/25`
+  if (normalized.includes('hard')) return `${base} bg-rose-500/15 text-rose-200 ring-rose-400/25`
+  return `${base} bg-sky-500/15 text-sky-200 ring-sky-400/25`
+}
 
 const filteredPuzzles = computed(() => {
   const query = search.value.trim().toLowerCase()
