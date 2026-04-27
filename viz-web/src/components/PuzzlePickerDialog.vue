@@ -63,7 +63,7 @@
               </select>
             </label>
             <label class="block">
-              <span class="text-xs text-zinc-400">N (grid size)</span>
+              <span class="text-xs text-zinc-400">Grid Size (NxN)</span>
               <select
                 v-model.number="size"
                 data-test="puzzle-size-filter"
@@ -76,7 +76,7 @@
               </select>
             </label>
             <label class="block">
-              <span class="text-xs text-zinc-400">K (amount of waypoints)</span>
+              <span class="text-xs text-zinc-400">Amount of Waypoints (K)</span>
               <select
                 v-model.number="waypoints"
                 data-test="puzzle-waypoint-filter"
@@ -97,7 +97,7 @@
             :key="puzzle.id"
             type="button"
             data-test="puzzle-option"
-            class="grid w-full grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-zinc-800 px-4 py-3 text-left transition hover:bg-zinc-800 hover:shadow-[inset_3px_0_0_rgb(161_161_170)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-zinc-500"
+            class="grid w-full grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-zinc-800 px-4 py-3 text-left transition hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-zinc-500"
             @click="selectPuzzle(puzzle.id)"
           >
             <span class="min-w-0">
@@ -106,8 +106,6 @@
             </span>
             <span class="flex items-center gap-2 text-xs text-zinc-300">
               <span :class="difficultyChipClass(puzzle.difficulty)">{{ puzzle.difficulty }}</span>
-              <span>N={{ puzzle.N }}</span>
-              <span>K={{ puzzle.K }}</span>
             </span>
           </button>
 
@@ -175,7 +173,7 @@ const waypointCounts = computed(() => uniqueSortedNumbers(props.puzzles.map((puz
 
 function difficultyChipClass(difficulty: string): string {
   const normalized = difficulty.toLowerCase()
-  const base = 'rounded px-2 py-0.5 text-[11px] font-medium ring-1'
+  const base = 'rounded-xl px-2 py-0.5 text-[11px] font-medium ring-1'
   if (normalized.includes('easy')) return `${base} bg-emerald-500/15 text-emerald-200 ring-emerald-400/25`
   if (normalized.includes('medium')) return `${base} bg-amber-500/15 text-amber-200 ring-amber-400/25`
   if (normalized.includes('hard')) return `${base} bg-rose-500/15 text-rose-200 ring-rose-400/25`

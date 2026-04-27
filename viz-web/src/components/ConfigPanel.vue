@@ -6,18 +6,18 @@
       <button
         type="button"
         data-test="open-puzzle-picker"
-        class="w-full rounded bg-zinc-800 px-2 py-2 text-left transition hover:bg-zinc-700 hover:shadow-[inset_3px_0_0_rgb(161_161_170)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+        class="w-full rounded bg-zinc-800 px-2 py-2 text-left transition hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
         @click="pickerOpen = true"
       >
         <span v-if="selectedPuzzle" class="block min-w-0">
-          <span class="block truncate text-sm">{{ selectedPuzzle.id }}</span>
-          <span class="mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-zinc-400">
-            <span class="truncate">{{ selectedPuzzle.name }}</span>
+          <span class="flex items-center gap-2 text-xs text-zinc-300">
+            <span class="block truncate text-sm">{{ selectedPuzzle.name }}</span>
             <span :class="difficultyChipClass(selectedPuzzle.difficulty)">
-              {{ selectedPuzzle.difficulty }}
+                {{ selectedPuzzle.difficulty }}
             </span>
-            <span>N={{ selectedPuzzle.N }}</span>
-            <span>K={{ selectedPuzzle.K }}</span>
+          </span>
+          <span class="mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-zinc-400">
+            <span class="truncate">{{ selectedPuzzle.id }}</span>
           </span>
         </span>
         <span v-else class="text-sm text-zinc-400">Choose puzzle</span>
@@ -28,7 +28,7 @@
       <label
         v-for="v in run.variants"
         :key="v.name"
-        class="flex items-center gap-2 rounded bg-zinc-800 px-2 py-1 text-xs"
+        :class="variantRowClass(v.name)"
       >
         <input v-model="run.variant" type="radio" :value="v.name" />
         <span class="flex-1">{{ v.name }}</span>
@@ -58,7 +58,7 @@
     </button>
 
     <details>
-      <summary class="cursor-pointer text-xs text-zinc-400">Advanced</summary>
+      <summary class="cursor-pointer text-xs text-zinc-400 transition hover:text-zinc-100">Advanced</summary>
       <div class="mt-2 space-y-1">
         <div
           v-for="param in advancedParams"
@@ -120,11 +120,20 @@ const selectedPuzzle = computed(() => run.puzzles.find((puzzle) => puzzle.id ===
 
 function difficultyChipClass(difficulty: string): string {
   const normalized = difficulty.toLowerCase()
-  const base = 'rounded px-2 py-0.5 text-[11px] font-medium ring-1'
+  const base = 'rounded-xl px-2 py-0.5 text-[11px] font-medium ring-1'
   if (normalized.includes('easy')) return `${base} bg-emerald-500/15 text-emerald-200 ring-emerald-400/25`
   if (normalized.includes('medium')) return `${base} bg-amber-500/15 text-amber-200 ring-amber-400/25`
   if (normalized.includes('hard')) return `${base} bg-rose-500/15 text-rose-200 ring-rose-400/25`
   return `${base} bg-sky-500/15 text-sky-200 ring-sky-400/25`
+}
+
+function variantRowClass(name: string): string {
+  const base =
+    'flex items-center gap-2 rounded px-2 py-1 text-xs transition hover:bg-zinc-700 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-zinc-500'
+  if (run.variant === name) {
+    return `${base} bg-blue-500/15 text-blue-100 ring-1 ring-blue-400/25`
+  }
+  return `${base} bg-zinc-800 text-zinc-100`
 }
 
 const advancedParams = [
