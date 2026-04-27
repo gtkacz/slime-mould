@@ -1,14 +1,24 @@
 <template>
   <section class="space-y-3 p-3 text-zinc-100">
     <h2 class="text-sm uppercase tracking-wide text-zinc-400">Run config</h2>
-    <label class="block">
+    <div class="space-y-1">
       <span class="text-xs">Puzzle</span>
-      <select v-model="run.puzzleId" class="w-full bg-zinc-800 rounded px-2 py-1">
-        <option v-for="p in run.puzzles" :key="p.id" :value="p.id">
-          {{ p.id }} — N={{ p.N }} K={{ p.K }}
-        </option>
-      </select>
-    </label>
+      <button
+        type="button"
+        data-test="open-puzzle-picker"
+        class="w-full rounded bg-zinc-800 px-2 py-2 text-left hover:bg-zinc-700"
+        @click="pickerOpen = true"
+      >
+        <span v-if="selectedPuzzle" class="block min-w-0">
+          <span class="block truncate text-sm">{{ selectedPuzzle.id }}</span>
+          <span class="block truncate text-xs text-zinc-400">
+            {{ selectedPuzzle.name }} · {{ selectedPuzzle.difficulty }} · N={{ selectedPuzzle.N }}
+            K={{ selectedPuzzle.K }}
+          </span>
+        </span>
+        <span v-else class="text-sm text-zinc-400">Choose puzzle</span>
+      </button>
+    </div>
     <fieldset class="space-y-1">
       <legend class="text-xs">Variant</legend>
       <label
@@ -28,11 +38,20 @@
       <span class="text-xs">Seed</span>
       <input
         v-model.number="run.seed"
+        data-test="seed-input"
         type="number"
         min="0"
         class="w-full bg-zinc-800 rounded px-2 py-1"
       />
     </label>
+    <button
+      type="button"
+      data-test="share-link"
+      class="w-full rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-200 hover:bg-zinc-700"
+      @click="shareLink"
+    >
+      Share link
+    </button>
 
     <details>
       <summary class="cursor-pointer text-xs text-zinc-400">Advanced</summary>
@@ -62,17 +81,26 @@
     >
       {{ run.submitting ? 'Solving…' : 'Run' }}
     </button>
+
+    <PuzzlePickerDialog
+      :open="pickerOpen"
+      :puzzles="run.puzzles"
+      @close="pickerOpen = false"
+      @select="run.puzzleId = $event"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { ApiClient, ApiError, api as defaultApi } from '../api/client'
 import { useRunStore } from '../stores/run'
 import { useTraceStore } from '../stores/trace'
 import { usePlaybackStore } from '../stores/playback'
 import { useNotificationsStore } from '../stores/notifications'
+import { useRunUrlSync } from '../composables/useRunUrlSync'
 import HelpTooltip from './HelpTooltip.vue'
+import PuzzlePickerDialog from './PuzzlePickerDialog.vue'
 
 const props = defineProps<{ client?: ApiClient }>()
 const client = props.client ?? defaultApi
@@ -81,6 +109,10 @@ const run = useRunStore()
 const traceStore = useTraceStore()
 const playback = usePlaybackStore()
 const notifications = useNotificationsStore()
+const pickerOpen = ref(false)
+const urlSync = useRunUrlSync(run)
+
+const selectedPuzzle = computed(() => run.puzzles.find((puzzle) => puzzle.id === run.puzzleId))
 
 const advancedParams = [
   {
@@ -158,9 +190,21 @@ async function refresh(): Promise<void> {
     run.variants = await client.listVariants()
     const first = run.puzzles[0]
     if (!run.puzzleId && first) run.puzzleId = first.id
+    urlSync.hydrate()
+    urlSync.start()
   } catch (err) {
     const text = err instanceof ApiError ? err.detail : String(err)
     notifications.push({ kind: 'error', text })
+  }
+}
+
+async function shareLink(): Promise<void> {
+  const url = urlSync.update()
+  try {
+    await navigator.clipboard.writeText(url)
+    notifications.push({ kind: 'info', text: 'Share link copied.' })
+  } catch {
+    notifications.push({ kind: 'error', text: 'Could not copy share link.' })
   }
 }
 
@@ -186,4 +230,5 @@ async function submit(): Promise<void> {
 }
 
 onMounted(refresh)
+onUnmounted(urlSync.stop)
 </script>
