@@ -12,6 +12,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
+from starlette.types import Scope
 
 from zipmould.viz.cache import TraceCache
 from zipmould.viz.routes import ZIPMOULD_VERSION
@@ -20,6 +22,29 @@ from zipmould.viz.routes import router as api_router
 _TRACE_CACHE_CAPACITY = 8
 _STATIC_DIR = Path(__file__).parent / "static"
 _ALLOWED_ORIGINS_ENV = "ZIPMOULD_ALLOWED_ORIGINS"
+
+
+class CacheBustingStaticFiles(StaticFiles):
+    """Serve the SPA shell fresh while allowing hashed assets to be cached."""
+
+    def file_response(
+        self,
+        full_path: os.PathLike[str] | str,
+        stat_result: os.stat_result,
+        scope: Scope,
+        status_code: int = HTTPStatus.OK.value,
+    ) -> Response:
+        response = super().file_response(full_path, stat_result, scope, status_code)
+        path = Path(full_path)
+        if path.name == "index.html":
+            response.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        elif path.parent.name == "assets":
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        else:
+            response.headers["Cache-Control"] = "public, max-age=600"
+        return response
 
 
 def _allowed_origins_from_env() -> list[str]:
@@ -71,5 +96,5 @@ def create_app() -> FastAPI:
     app.add_exception_handler(RequestValidationError, _validation_handler)  # pyright: ignore[reportArgumentType]
     app.add_exception_handler(Exception, _generic_handler)
     if _STATIC_DIR.exists():
-        app.mount("/", StaticFiles(directory=_STATIC_DIR, html=True), name="static")
+        app.mount("/", CacheBustingStaticFiles(directory=_STATIC_DIR, html=True), name="static")
     return app

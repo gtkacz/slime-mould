@@ -3,6 +3,8 @@ name: Deploy frontend to GitHub Pages
 on:
   push:
     branches: [main]
+    paths:
+      - 'viz-web/**'
   workflow_dispatch:
 
 concurrency:
@@ -33,6 +35,7 @@ jobs:
         working-directory: viz-web
         env:
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.zipmould.tkacz.dev.br/api' }}
+          VITE_APP_BUILD_ID: ${{ github.sha }}
         run: bun run build
 
       - name: Configure GitHub Pages
