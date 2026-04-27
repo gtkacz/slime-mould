@@ -24,12 +24,17 @@
           <span v-else class="text-sm text-zinc-400">Choose puzzle</span>
         </button>
         <button
+          ref="randomPuzzleButton"
           type="button"
           data-test="random-puzzle"
           class="grid w-10 shrink-0 place-items-center rounded bg-zinc-800 text-zinc-200 transition hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 disabled:opacity-50"
           aria-label="Select random puzzle"
-          title="Select random puzzle"
+          :aria-describedby="randomPuzzleTooltipOpen ? randomPuzzleTooltipId : undefined"
           :disabled="run.puzzles.length === 0"
+          @mouseenter="randomPuzzleTooltipOpen = true"
+          @mouseleave="randomPuzzleTooltipOpen = false"
+          @focus="randomPuzzleTooltipOpen = true"
+          @blur="randomPuzzleTooltipOpen = false"
           @click="selectRandomPuzzle"
         >
           <svg
@@ -115,11 +120,24 @@
       @close="pickerOpen = false"
       @select="selectPuzzle"
     />
+    <Teleport to="body">
+      <div
+        v-if="randomPuzzleTooltipOpen"
+        :id="randomPuzzleTooltipId"
+        ref="randomPuzzleTooltip"
+        role="tooltip"
+        class="z-50 max-w-64 rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-xs leading-snug text-zinc-100 shadow"
+        :style="randomPuzzleTooltipStyles"
+      >
+        Select random puzzle
+      </div>
+    </Teleport>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ApiClient, ApiError, api as defaultApi } from '../api/client'
 import { useRunStore } from '../stores/run'
 import { useTraceStore } from '../stores/trace'
@@ -138,6 +156,20 @@ const playback = usePlaybackStore()
 const notifications = useNotificationsStore()
 const pickerOpen = ref(false)
 const urlSync = useRunUrlSync(run)
+const randomPuzzleButton = ref<HTMLElement | null>(null)
+const randomPuzzleTooltip = ref<HTMLElement | null>(null)
+const randomPuzzleTooltipOpen = ref(false)
+const randomPuzzleTooltipId = `random-puzzle-tooltip-${Math.random().toString(36).slice(2)}`
+
+const { floatingStyles: randomPuzzleTooltipStyles } = useFloating(
+  randomPuzzleButton,
+  randomPuzzleTooltip,
+  {
+    placement: 'right',
+    whileElementsMounted: autoUpdate,
+    middleware: [offset(8), flip(), shift({ padding: 8 })],
+  },
+)
 
 const selectedPuzzle = computed(() => run.puzzles.find((puzzle) => puzzle.id === run.puzzleId))
 
@@ -233,8 +265,6 @@ function onOverride(key: string, value: string): void {
 
 function selectPuzzle(puzzleId: string): void {
   run.puzzleId = puzzleId
-  traceStore.clear()
-  playback.setTotal(0)
 }
 
 function selectRandomPuzzle(): void {
@@ -243,6 +273,15 @@ function selectRandomPuzzle(): void {
   const puzzle = run.puzzles[index]
   if (puzzle) selectPuzzle(puzzle.id)
 }
+
+watch(
+  () => run.puzzleId,
+  (puzzleId) => {
+    if (!traceStore.trace || traceStore.trace.puzzle_id === puzzleId) return
+    traceStore.clear()
+    playback.setTotal(0)
+  },
+)
 
 async function refresh(): Promise<void> {
   try {

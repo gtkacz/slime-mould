@@ -247,11 +247,31 @@ describe('ConfigPanel', () => {
     await flush()
 
     const button = wrapper.get('[data-test="random-puzzle"]')
-    expect(button.attributes('title')).toBe('Select random puzzle')
+    expect(button.attributes('title')).toBeUndefined()
     expect(button.find('svg').exists()).toBe(true)
+    await button.trigger('focus')
+    await wrapper.vm.$nextTick()
+    expect(document.body.textContent).toContain('Select random puzzle')
     await button.trigger('click')
+    await wrapper.vm.$nextTick()
 
     expect(useRunStore().puzzleId).toBe('bonus_a')
+    expect(traceStore.trace).toBeNull()
+  })
+
+  it('clears a mismatched trace when the selected puzzle id changes outside picker handlers', async () => {
+    const client = new ApiClient()
+    vi.spyOn(client, 'listPuzzles').mockResolvedValue(puzzles)
+    vi.spyOn(client, 'listVariants').mockResolvedValue(variants)
+    const traceStore = useTraceStore()
+    const run = useRunStore()
+
+    const wrapper = mount(ConfigPanel, { props: { client }, attachTo: document.body })
+    await flush()
+    traceStore.set('old', fakeTrace)
+    run.puzzleId = 'bonus_a'
+    await wrapper.vm.$nextTick()
+
     expect(traceStore.trace).toBeNull()
   })
 
