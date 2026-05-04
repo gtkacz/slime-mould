@@ -53,6 +53,7 @@
       :value="presetValue"
       @change="onPreset"
     >
+      <option value="auto">{{ autoLabel }}</option>
       <option v-for="p in presets" :key="p.value" :value="p.value">{{ p.label }}</option>
       <option value="custom">Custom</option>
     </select>
@@ -80,7 +81,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { usePlaybackStore } from '../stores/playback'
+import { pickAutoSpeed, usePlaybackStore } from '../stores/playback'
 import IconPlay from './icons/IconPlay.vue'
 import IconPause from './icons/IconPause.vue'
 import IconStepBack from './icons/IconStepBack.vue'
@@ -110,9 +111,21 @@ const presets: readonly SpeedPreset[] = [
 ]
 
 const presetValue = computed<string>(() => {
+  if (store.autoSpeed) return 'auto'
   const match = presets.find((p) => Math.abs(p.value - store.speed) < 1e-9)
   return match ? String(match.value) : 'custom'
 })
+
+const autoLabel = computed<string>(() => {
+  if (store.total <= 1) return 'Auto'
+  const fps = pickAutoSpeed(store.total)
+  return `Auto (~${formatFps(fps)} fps)`
+})
+
+function formatFps(value: number): string {
+  if (Number.isInteger(value)) return String(value)
+  return String(Number(value.toFixed(3)))
+}
 
 const speedDisplay = computed<string>(() => {
   const v = store.speed
@@ -138,6 +151,10 @@ function onScrub(e: Event): void {
 function onPreset(e: Event): void {
   const raw = (e.target as HTMLSelectElement).value
   if (raw === 'custom') return
+  if (raw === 'auto') {
+    store.enableAutoSpeed()
+    return
+  }
   const v = Number(raw)
   if (Number.isFinite(v)) store.setSpeed(v)
 }
