@@ -127,7 +127,7 @@ style: |
 
 # ZipMould
 
-## Um *solver* para *puzzles* Zip inspirado em *slime mould*
+## Um *solver* para *puzzles* Zip inspirado em fungo mucilaginoso
 
 **Gabriel Mitelman Tkacz** · Maio de 2026
 
@@ -142,7 +142,7 @@ Da metaheurística contínua à busca combinatória discreta — adaptando **Li 
 <div>
 
 ### Ato 1 · Li (≈7 min)
-O que é o **Slime Mould Algorithm**?
+O que é o Slime Mould Algorithm (SMA)?
 A biologia, as equações e a evidência empírica.
 
 ### Ato 2 · ZipMould (≈7 min)
@@ -175,7 +175,7 @@ $$\tau \leftarrow v_c \cdot \tau + v_b \cdot \Delta_{\textit{rank-weighted}}$$
 
 ## O que é *Physarum polycephalum*?
 
-- **_Slime mould_ acelular.** Um único organismo multinucleado, sem sistema nervoso.
+- **Fungo mucilaginoso acelular.** Um único organismo multinucleado, sem sistema nervoso.
 - Procura alimento estendendo uma **rede venosa** pelo substrato.
 - **_Feedback_ positivo**: mais alimento → fluxo citoplasmático mais rápido → veias mais grossas.
 - **_Feedback_ negativo**: ramos sem alimento retraem.
@@ -233,7 +233,7 @@ $$
 - A **metade superior** da população puxa para áreas favoráveis — **_feedback_ positivo**.
 - A **metade inferior** é empurrada para longe — **_feedback_ negativo** simulando a retração de veias sem alimento.
 - $\log$ suaviza a taxa de mudança; $r \sim \mathcal{U}(0,1)$ mantém a resposta estocástica.
-- Captura a "preferência" do *slime mould* pelo <strong><em>ranking</em> de <em>fitness</em></strong>, não pela *fitness* absoluta.
+- Captura a "preferência" do fungo mucilaginoso pelo <strong><em>ranking</em> de <em>fitness</em></strong>, não pela *fitness* absoluta.
 
 <p class="citation">Li et al. (2020), §2.3.2 — modelo matemático de "<em>Wrap food</em>".</p>
 
@@ -303,7 +303,7 @@ Iterações iniciais: <strong><em>exploration</em></strong> domina porque $v_b$ 
 
 Iterações finais: <strong><em>exploitation</em></strong> domina quando $v_b$ e $v_c$ encolhem.
 
-O *slime mould* "decide se aproxima da fonte atual ou procura outra" — aqui, isso aparece como amplitude de oscilação.
+O fungo mucilaginoso "decide se aproxima da fonte atual ou procura outra" — aqui, isso aparece como amplitude de oscilação.
 
 </div>
 
