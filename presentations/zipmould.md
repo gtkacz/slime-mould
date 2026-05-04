@@ -5,9 +5,9 @@ class: invert
 math: katex
 paginate: true
 size: 16:9
-title: "ZipMould — A Slime-Mould-Inspired Solver for Zip Puzzles"
+title: "ZipMould — resolvedor para Zip inspirado em Physarum"
 author: "Gabriel Mitelman Tkacz"
-description: "Porting Li et al.'s 2020 SMA from continuous optimisation to a discrete Hamiltonian-path domain."
+description: "Adaptação da SMA de Li et al. (2020): da otimização contínua a um domínio discreto de caminho Hamiltoniano."
 
 style: |
   section {
@@ -36,6 +36,7 @@ style: |
   h3 { color: #fbbf24; font-weight: 600; font-size: 1.0em; margin-top: 0.6em; margin-bottom: 0.25em; }
   strong { color: #fbbf24; }
   em { color: #94a3b8; }
+  h1 em, h2 em, h3 em, strong em { color: inherit; }
   code {
     background: #1e293b;
     color: #f0abfc;
@@ -64,6 +65,28 @@ style: |
   section.lead h2 { border: none; text-align: left; color: #94a3b8; font-weight: 400; font-size: 1.1em; margin-bottom: 1.5em; }
   section.lead p { font-size: 1.0em; color: #94a3b8; }
   section.lead p strong { color: #e2e8f0; font-weight: 600; }
+  section.dense {
+    font-size: 23px;
+    padding: 42px 64px 54px;
+  }
+  section.dense h1 { font-size: 1.55em; }
+  section.dense h2 { font-size: 1.18em; margin-bottom: 0.45em; }
+  section.dense h3 { margin-top: 0.45em; }
+  section.dense table { font-size: 0.70em; margin: 0.35em 0; }
+  section.dense th, section.dense td { padding: 0.24em 0.45em; }
+  section.dense table, section.dense tbody, section.dense tr, section.dense td {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+  }
+  section.dense tr:nth-child(2n) td { background-color: #111827 !important; }
+  section.dense th {
+    background-color: #1e293b !important;
+    color: #fbbf24 !important;
+  }
+  section.dense pre { font-size: 0.56em; padding: 0.55em 0.8em; }
+  section.dense .ribbon { font-size: 0.86em; padding: 0.45em 0.8em; }
+  section.dense ul li, section.dense ol li { margin-bottom: 0.12em; }
+  section.dense .citation { font-size: 0.62em; margin-top: 0.55em; }
   section::after {
     color: #475569;
     font-size: 0.6em;
@@ -104,29 +127,29 @@ style: |
 
 # ZipMould
 
-## A slime-mould-inspired solver for Zip puzzles
+## Um *solver* para *puzzles* Zip inspirado em *slime mould*
 
-**Gabriel Mitelman Tkacz** · May 2026
+**Gabriel Mitelman Tkacz** · Maio de 2026
 
-From continuous metaheuristic to discrete combinatorial search — porting **Li et al. (2020)** to a Hamiltonian-path domain.
+Da metaheurística contínua à busca combinatória discreta — adaptando **Li et al. (2020)** para um domínio de caminho Hamiltoniano.
 
 ---
 
-## Three acts, twenty minutes
+## Roteiro: três atos em vinte minutos
 
 <div class="columns">
 
 <div>
 
-### Act 1 · Li (≈7 min)
-What is the **Slime Mould Algorithm**?
-The biology, the equations, the empirical case.
+### Ato 1 · Li (≈7 min)
+O que é o **Slime Mould Algorithm**?
+A biologia, as equações e a evidência empírica.
 
-### Act 2 · ZipMould (≈7 min)
-Porting continuous SMA to a **discrete combinatorial** problem. Where the analogy holds, where it breaks, what we changed.
+### Ato 2 · ZipMould (≈7 min)
+Como adaptar uma SMA contínua a um problema **combinatório discreto**. Onde a analogia funciona, onde ela quebra e o que precisou mudar.
 
-### Act 3 · Demo (≈5 min)
-Live trace replay in the **Vue 3 visualiser**.
+### Ato 3 · *Demo* (≈5 min)
+Reprodução de *trace* ao vivo no **visualizador Vue 3**.
 
 </div>
 
@@ -134,13 +157,13 @@ Live trace replay in the **Vue 3 visualiser**.
 
 <div class="ribbon">
 
-**The bridge in one line**
+**A intuição em uma linha**
 
-Li's update
+A atualização de Li
 $$X(t+1) = v_c \cdot X(t) + v_b \cdot (W \cdot X_A - X_B)$$
 
-becomes ZipMould's edge update
-$$\tau \leftarrow v_c \cdot \tau + v_b \cdot \Delta_{\text{rank-weighted}}$$
+vira a atualização de arestas do ZipMould
+$$\tau \leftarrow v_c \cdot \tau + v_b \cdot \Delta_{\textit{rank-weighted}}$$
 
 </div>
 
@@ -150,17 +173,17 @@ $$\tau \leftarrow v_c \cdot \tau + v_b \cdot \Delta_{\text{rank-weighted}}$$
 
 ---
 
-## What is *Physarum polycephalum*?
+## O que é *Physarum polycephalum*?
 
-- **Acellular slime mould.** Single multinucleate organism, no nervous system.
-- Forages by extending a **venous network** through a substrate.
-- **Positive feedback**: high food concentration → faster cytoplasmic flow → vein thickens.
-- **Negative feedback**: starved branches retract.
-- Demonstrated to solve mazes, approximate **Tokyo's rail network**, and behave like a distributed optimiser without any centralised control.
+- **_Slime mould_ acelular.** Um único organismo multinucleado, sem sistema nervoso.
+- Procura alimento estendendo uma **rede venosa** pelo substrato.
+- **_Feedback_ positivo**: mais alimento → fluxo citoplasmático mais rápido → veias mais grossas.
+- **_Feedback_ negativo**: ramos sem alimento retraem.
+- Já foi usado para resolver labirintos, aproximar a **rede ferroviária de Tóquio** e agir como um otimizador distribuído sem controle central.
 
 <div class="ribbon">
 
-The algorithm we'll see formalises three observed behaviours: <strong>approaching food</strong>, <strong>wrapping food</strong> (the venous-thickness feedback), and <strong>grabbling food</strong> (the bio-oscillator amplitude).
+A SMA transforma três comportamentos observados em regras de atualização: <strong><em>approaching food</em></strong>, <strong><em>wrapping food</em></strong> (<em>feedback</em> na espessura das veias) e <strong><em>grabbling food</em></strong> (amplitude do bio-oscilador).
 
 </div>
 
@@ -168,7 +191,7 @@ The algorithm we'll see formalises three observed behaviours: <strong>approachin
 
 ---
 
-## SMA Eq. (2.1) — *approach food*
+## SMA Eq. (2.1) — *aproximar-se do alimento*
 
 <div class="math-display">
 
@@ -182,41 +205,41 @@ $$
 
 </div>
 
-- $\vec{X_b}$ — best individual found so far.
-- $\vec{X_A}, \vec{X_B}$ — two random individuals (provides exploration vector).
-- $\vec{W}$ — fitness-rank-derived **weight** (Eq. 2.5, next slide).
-- $\vec{v_b} \in [-a, a]$, where $a = \mathrm{arctanh}(1 - t/T)$.
-- $\vec{v_c}$ decreases linearly from $1$ to $0$.
-- $p = \tanh\lvert S(i) - DF\rvert$ — adaptive switching threshold.
+- $\vec{X_b}$ — melhor indivíduo encontrado até agora.
+- $\vec{X_A}, \vec{X_B}$ — dois indivíduos aleatórios que definem uma direção de exploração.
+- $\vec{W}$ — **peso** derivado do *ranking* de *fitness* (Eq. 2.5, próximo *slide*).
+- $\vec{v_b} \in [-a, a]$, em que $a = \mathrm{arctanh}(1 - t/T)$.
+- $\vec{v_c}$ decresce linearmente de $1$ para $0$.
+- $p = \tanh\lvert S(i) - DF\rvert$ — limiar adaptativo para alternar o comportamento.
 
 <p class="citation">Li et al. (2020), §2.3.1.</p>
 
 ---
 
-## SMA Eq. (2.5) — the weight $\vec{W}$
+## SMA Eq. (2.5) — o peso $\vec{W}$
 
 <div class="math-display">
 
 $$
 W_i =
 \begin{cases}
-1 + r \cdot \log\!\Big(\dfrac{bF - S(i)}{bF - wF} + 1\Big), & i \in \text{top half (good fitness)} \\[6pt]
-1 - r \cdot \log\!\Big(\dfrac{bF - S(i)}{bF - wF} + 1\Big), & i \in \text{bottom half (poor fitness)}
+1 + r \cdot \log\!\Big(\dfrac{bF - S(i)}{bF - wF} + 1\Big), & i \in \text{metade superior (boa avaliação)} \\[6pt]
+1 - r \cdot \log\!\Big(\dfrac{bF - S(i)}{bF - wF} + 1\Big), & i \in \text{metade inferior (avaliação ruim)}
 \end{cases}
 $$
 
 </div>
 
-- **Top half** of population pulls toward favourable areas — **positive feedback**.
-- **Bottom half** is pushed away — **negative feedback** simulating retraction of starved veins.
-- $\log$ tames the rate of change; $r \sim \mathcal{U}(0,1)$ keeps the response stochastic.
-- Captures the slime mould "preference" via **fitness ranking**, not absolute fitness.
+- A **metade superior** da população puxa para áreas favoráveis — **_feedback_ positivo**.
+- A **metade inferior** é empurrada para longe — **_feedback_ negativo** simulando a retração de veias sem alimento.
+- $\log$ suaviza a taxa de mudança; $r \sim \mathcal{U}(0,1)$ mantém a resposta estocástica.
+- Captura a "preferência" do *slime mould* pelo <strong><em>ranking</em> de <em>fitness</em></strong>, não pela *fitness* absoluta.
 
-<p class="citation">Li et al. (2020), §2.3.2 — "Wrap food" mathematical model.</p>
+<p class="citation">Li et al. (2020), §2.3.2 — modelo matemático de "<em>Wrap food</em>".</p>
 
 ---
 
-## SMA Eq. (2.7) — the full update
+## SMA Eq. (2.7) — a atualização completa
 
 <div class="math-display">
 
@@ -235,139 +258,141 @@ $$
 
 <div>
 
-- Three branches, **per individual, per iteration**:
-  1. **z-branch** (prob $z = 0.03$ in Li): random restart in the search box.
-  2. **Approach** branch (prob $\approx p$): exploit best with W-weighted exploration.
-  3. **Oscillate** branch: shrink toward origin with $v_c$.
+- Três casos, **por indivíduo, por iteração**:
+  1. ***z-branch*** (prob. $z = 0.03$ em Li): reinício aleatório no espaço de busca.
+  2. Caso ***approach*** (prob. $\approx p$): explora a melhor solução com perturbação ponderada por W.
+  3. Caso ***oscillate***: contrai a solução em direção à origem com $v_c$.
 
 </div>
 
 <div class="ribbon">
 
-The z-branch is what lets SMA *escape local optima* without explicit niching or restarting the whole population.
+A *z-branch* permite que a SMA *escape de ótimos locais* sem *niching* explícito e sem reiniciar a população inteira.
 
 </div>
 
 </div>
 
-<p class="citation">Li et al. (2020), §2.3.2 Eq. (2.7); $z$ chosen as 0.03 from sensitivity sweep §3.4.</p>
+<p class="citation">Li et al. (2020), §2.3.2 Eq. (2.7); $z$ escolhido como 0.03 a partir do <em>sweep</em> de sensibilidade §3.4.</p>
 
 ---
 
-## The $v_b$ / $v_c$ schedule
+## A evolução de $v_b$ / $v_c$
 
 <div class="columns">
 
 <div>
 
-### $v_c$ — linear contraction
-$$v_c \in [-1, 1], \quad v_c \to 0 \text{ as } t \to T$$
+### $v_c$ — contração linear
+$$v_c \in [-1, 1], \quad v_c \to 0 \text{ quando } t \to T$$
 
-Smoothly damps the *oscillate* branch. Late in the run, $v_c \cdot X \approx 0$: the agent stops drifting on its own.
+Amortece suavemente o caso *oscillate*. No fim da execução, $v_c \cdot X \approx 0$: o agente praticamente para de se mover sozinho.
 
-### $v_b$ — saturating amplitude
+### $v_b$ — amplitude saturante
 $$v_b \in [-a, a], \quad a = \mathrm{arctanh}(1 - t/T)$$
 
-Early: $a \to \infty$ → big jumps. Late: $a \to 0$ → fine-grained exploitation.
+No início: $a \to \infty$ → saltos grandes. No fim: $a \to 0$ → exploração local mais fina.
 
 </div>
 
 <div class="ribbon">
 
-**Combined effect**
+**Efeito combinado**
 
-Early iterations: <strong>exploration</strong> dominates via large $v_b$.
+Iterações iniciais: <strong><em>exploration</em></strong> domina porque $v_b$ é grande.
 
-Late iterations: <strong>exploitation</strong> dominates as both $v_b$ and $v_c$ shrink.
+Iterações finais: <strong><em>exploitation</em></strong> domina quando $v_b$ e $v_c$ encolhem.
 
-The slime mould "decides whether to approach the current source or seek another" — encoded as oscillation amplitude.
-
-</div>
+O *slime mould* "decide se aproxima da fonte atual ou procura outra" — aqui, isso aparece como amplitude de oscilação.
 
 </div>
 
-<p class="citation">Li et al. (2020), §2.3.3 "Grabble food", Fig. 5.</p>
+</div>
+
+<p class="citation">Li et al. (2020), §2.3.3 "<em>Grabble food</em>", Figura 5.</p>
 
 ---
 
-## SMA — the algorithm
+## SMA — o algoritmo
 
 ```text
-INITIALISE population X_1 ... X_n at random in [LB, UB]
-FOR t = 1 ... T:
-    evaluate fitness S(i) for all i
-    sort population, identify bF, wF, X_b
-    compute W via Eq. (2.5)        # rank-based positive/negative weights
-    FOR each individual i:
-        sample r ~ U(0,1), rand ~ U(0,1)
-        update v_b, v_c, p          # schedule
-        IF rand < z:
-            X_i <- random restart in [LB, UB]
-        ELIF r < p:
-            X_i <- X_b + v_b * (W * X_A - X_B)   # approach
-        ELSE:
-            X_i <- v_c * X_i                       # oscillate
-RETURN bF, X_b
+INICIALIZAR população X_1 ... X_n aleatoriamente em [LB, UB]
+PARA t = 1 ... T:
+    avaliar aptidão S(i) para todo i
+    ordenar população, identificar bF, wF, X_b
+    calcular W via Eq. (2.5)       # pesos positivos/negativos por ordenação
+    PARA cada indivíduo i:
+        amostrar r ~ U(0,1), rand ~ U(0,1)
+        atualizar v_b, v_c, p       # evolução
+        SE rand < z:
+            X_i <- reinício aleatório em [LB, UB]
+        SENÃO SE r < p:
+            X_i <- X_b + v_b * (W * X_A - X_B)   # aproximação
+        SENÃO:
+            X_i <- v_c * X_i                     # oscilação
+RETORNAR bF, X_b
 ```
 
-- One outer loop, three inner branches, no derivatives, no gradients.
-- Five hyperparameters total: population $n$, iterations $T$, restart prob $z$, plus the schedule constants baked into $v_b, v_c$.
+- Um *loop* externo, três casos internos, sem derivadas e sem gradientes.
+- Cinco hiperparâmetros no total: população $n$, iterações $T$, probabilidade de reinício $z$ e as constantes embutidas em $v_b, v_c$.
 
 ---
 
-## Why the field cared
+<!-- _class: dense -->
+
+## Por que isso chamou atenção
 
 <div class="columns">
 
 <div>
 
-### Empirical case
-- **23 classical benchmarks** (unimodal + multimodal) + **10 CEC2014** functions: SMA wins or ties first on the majority.
-- Outperforms WOA, GWO, MFO, BA, SCA, PSO, SSA, MVO, ALO on most multimodal cases.
-- **4 engineering design problems** (welded beam, pressure vessel, cantilever, I-beam): best feasible solution on all four.
-- Convergence curves show **fast early descent + accurate late refinement**.
+### Caso empírico
+- **23 *benchmarks* clássicos** (unimodais + multimodais) + **10 funções CEC2014**: SMA vence ou empata em primeiro na maioria.
+- Supera WOA, GWO, MFO, BA, SCA, PSO, SSA, MVO, ALO na maior parte dos casos multimodais.
+- **4 problemas de projeto de engenharia** (viga soldada, vaso de pressão, *cantilever*, *I-beam*): melhor solução viável nos quatro.
+- As curvas de convergência mostram **queda inicial rápida + refinamento final preciso**.
 
 </div>
 
 <div>
 
-### Why it works
-- $W$ implements an explicit **diversity term** — bottom-half repulsion prevents premature convergence.
-- $v_b$ schedule provides **automatic exploration→exploitation** transition, no operator scheduling.
-- $z$-branch escape is **simple but effective** for getting out of local basins.
+### Por que funciona
+- $W$ implementa um **termo de diversidade** explícito — a repulsão da metade inferior evita convergência prematura.
+- A evolução de $v_b$ cria uma transição automática <strong><em>exploration</em>→<em>exploitation</em></strong>, sem agenda externa de operadores.
+- A fuga via *z-branch* é **simples, mas efetiva** para sair de bacias locais.
 
 </div>
 
 </div>
 
-<p class="citation">Li et al. (2020), Tables 5–22; Figs. 9–14 (convergence curves).</p>
+<p class="citation">Li et al. (2020), Tabelas 5–22; Figuras 9–14 (curvas de convergência).</p>
 
 ---
 
-## The Zip puzzle
+## O *puzzle* Zip
 
 <div class="columns-wide-left">
 
 <div>
 
-### Formal definition
-Given a grid $G_{N \times N}$ with:
-- $K$ ordered waypoints $w_1, w_2, \dots, w_K$
-- A set of **walls** (forbidden edges between adjacent cells)
-- A set of **blocked** cells
+### Definição formal
+Dada uma grade $G_{N \times N}$ com:
+- $K$ *waypoints* ordenados $w_1, w_2, \dots, w_K$
+- Um conjunto de **paredes** (arestas proibidas entre células adjacentes)
+- Um conjunto de células **bloqueadas**
 
-Find a **Hamiltonian path** $\pi_1, \dots, \pi_L$ (where $L = N^2 - |\text{blocked}|$) such that:
-1. consecutive cells are 4-adjacent and not wall-separated,
-2. waypoints appear in **ascending order**,
-3. $\pi_1 = w_1$ and $\pi_L = w_K$.
+Queremos encontrar um **caminho Hamiltoniano** $\pi_1, \dots, \pi_L$ (em que $L = N^2 - |\text{bloqueadas}|$) tal que:
+1. células consecutivas sejam 4-adjacentes e não separadas por parede,
+2. *waypoints* apareçam em **ordem crescente**,
+3. $\pi_1 = w_1$ e $\pi_L = w_K$.
 
 </div>
 
 <div class="ribbon">
 
-**LinkedIn's daily Zip puzzle** popularised the format.
+**O *puzzle* Zip diário do LinkedIn** popularizou o formato.
 
-The decision problem is **NP-complete** (reduces to Hamiltonian-path-with-pinned-vertices), but tractable in practice for $N \leq 10$ — which is exactly where metaheuristics earn their keep.
+O problema de decisão é **NP-completo** (reduz a *Hamiltonian-path-with-pinned-vertices*), mas é tratável na prática para $N \leq 10$ — exatamente a faixa em que metaheurísticas começam a valer a pena.
 
 </div>
 
@@ -375,30 +400,30 @@ The decision problem is **NP-complete** (reduces to Hamiltonian-path-with-pinned
 
 ---
 
-## Why continuous SMA can't transfer directly
+## Por que não dá para aplicar a SMA contínua diretamente
 
 <div class="columns">
 
 <div>
 
-### Li's SMA lives in $\mathbb{R}^d$
-- $\vec{X_A} - \vec{X_B}$ is a Euclidean direction vector.
-- $v_b \cdot W$ scales an amplitude in continuous space.
-- Step is just vector addition.
+### A SMA de Li vive em $\mathbb{R}^d$
+- $\vec{X_A} - \vec{X_B}$ é um vetor de direção euclidiano.
+- $v_b \cdot W$ escala uma amplitude em espaço contínuo.
+- O passo é apenas soma vetorial.
 
-### Zip lives on a graph
-- "Position" is a partial Hamiltonian path, not a coordinate.
-- $\vec{X_A} - \vec{X_B}$ is **undefined** between two paths.
-- The natural state is **edge usage**, not point coordinates.
+### Zip é um problema em grafo
+- "Posição" é um caminho Hamiltoniano parcial, não uma coordenada.
+- $\vec{X_A} - \vec{X_B}$ é **indefinido** entre dois caminhos.
+- O estado natural é **uso de arestas**, não coordenadas de pontos.
 
 </div>
 
 <div class="ribbon">
 
-### The bridge
-Borrow **stigmergy** from <strong>Ant Colony Optimisation</strong> (Dorigo, 1992): pheromone $\tau$ on edges plays the role of the agent state.
+### A ponte
+A saída é usar ***stigmergy***, como em <strong>Ant Colony Optimisation</strong> (Dorigo, 1992): o feromônio $\tau$ nas arestas passa a ser o estado do agente.
 
-Then port SMA's <strong>update dynamics</strong> — the $v_b$/$v_c$ schedule, signed rank weights, and z-restart — onto the pheromone, not onto a coordinate.
+Em seguida, levamos a <strong>dinâmica de atualização</strong> da SMA — evolução de $v_b$/$v_c$, pesos assinados por *ranking* e *z-restart* — para o feromônio, não para uma coordenada.
 
 </div>
 
@@ -406,207 +431,216 @@ Then port SMA's <strong>update dynamics</strong> — the $v_b$/$v_c$ schedule, s
 
 ---
 
-## ZipMould — pipeline
+<!-- _class: dense -->
+
+## ZipMould — *pipeline*
 
 ```text
 ┌──────────────┐   ┌──────────────────┐   ┌──────────────────┐
-│  Puzzle      │   │  Feasibility     │   │  Solver kernel   │
-│  (grid + K   │──▶│  precheck        │──▶│  (Numba @njit)   │
-│  waypoints)  │   │  O(N²)           │   │  population × T  │
+│  Entrada     │   │  Checagem        │   │  Núcleo Numba    │
+│  (grade + K  │──▶│  prévia          │──▶│  (Numba @njit)   │
+│  pontos)     │   │  O(N²)           │   │  população × T   │
 └──────────────┘   └──────────────────┘   └────────┬─────────┘
                                                    │
                                                    ▼
                                           ┌──────────────────┐
-                                          │  Fitness +       │
-                                          │  CBOR trace      │
+                                          │  Avaliação +     │
+                                          │  registro CBOR   │
                                           └──────────────────┘
 ```
 
-### Feasibility checks (cheap, decisive)
-- Waypoint reachable & not blocked
-- Free subgraph **connected** (BFS from $w_1$ covers all free cells)
-- **Parity bound**: $|F_0 - F_1| \leq 1$ on chessboard colouring
-- **Endpoint parity** consistent with $w_1, w_K$
+### Checagens de viabilidade (baratas e decisivas)
+- *Waypoint* alcançável e não bloqueado
+- Subgrafo livre **conectado** (BFS a partir de $w_1$ cobre todas as células livres)
+- **Limite de paridade**: $|F_0 - F_1| \leq 1$ na coloração de tabuleiro
+- **Paridade dos extremos** consistente com $w_1, w_K$
 
-Failing any of these proves no Hamiltonian path exists — we skip the kernel entirely.
+Se qualquer uma falha, o *puzzle* é inviável — e o *kernel* nem roda.
 
 ---
 
-## Step 1 — ACO-style construction
+<!-- _class: dense -->
 
-Each walker, at each cell, picks a 4-neighbour by **softmax over (pheromone + heuristic)**:
+## Etapa 1 — construção estilo ACO
+
+Cada *walker* escolhe um vizinho 4-adjacente via <strong><em>softmax</em>(feromônio + heurística)</strong>:
 
 $$P(c \to c') \propto \exp\!\Big(\alpha \cdot \tau_{cc'} + \beta \cdot \log \eta_{c'}\Big)$$
 
-with combined heuristic $\eta_{c'} = \mathrm{softplus}(h_m)^{\gamma_m} \cdot \mathrm{softplus}(h_w)^{\gamma_w} \cdot \mathrm{softplus}(h_a)^{\gamma_a} \cdot \mathrm{softplus}(h_p)^{\gamma_p}$.
+Heurística combinada:
+$$\eta_{c'} = \mathrm{softplus}(h_m)^{\gamma_m} \cdot \mathrm{softplus}(h_w)^{\gamma_w} \cdot \mathrm{softplus}(h_a)^{\gamma_a} \cdot \mathrm{softplus}(h_p)^{\gamma_p}$$
 
-| Heuristic | Role | Source |
+| Heurística | Papel | Fonte |
 |---|---|---|
-| $h_m$ — Manhattan | Pull toward the next waypoint | $-d_M(c', w_{\text{seg}+1})$ |
-| $h_w$ — Warnsdorff | Prefer low-degree cells; visit dead ends first | classical knight's-tour heuristic (1823) |
-| $h_a$ — Articulation | Reject moves that **disconnect** the unvisited free subgraph | flood-fill check |
-| $h_p$ — Parity | Maintain $\lvert F_0 - F_1\rvert \leq 1$ post-move | chessboard invariant |
+| $h_m$ — Manhattan | Puxar para o próximo *waypoint* | $-d_M(c', w_{\text{seg}+1})$ |
+| $h_w$ — Warnsdorff | Preferir baixo grau; consumir becos sem saída cedo | heurística *knight's tour* (1823) |
+| $h_a$ — Articulação | Rejeitar movimentos que **desconectam** o subgrafo livre não visitado | checagem *flood-fill* |
+| $h_p$ — Paridade | Manter $\lvert F_0 - F_1\rvert \leq 1$ após o movimento | invariante de tabuleiro |
 
-<p class="citation">Combined multiplicatively after softplus to admit any-sign components; α = 1, β = 2 defaults match ACO conventions (Dorigo & Stützle, 2004).</p>
+<p class="citation">A combinação por <em>softplus</em> aceita sinais mistos; <em>defaults</em> α = 1, β = 2 seguem ACO (Dorigo & Stützle, 2004).</p>
 
 ---
 
-## Step 2 — SMA-style pheromone update
+## Etapa 2 — atualização do feromônio no estilo SMA
 
 ```python
 # src/zipmould/solver/_kernel.py — _pheromone_update
 progress = float(t) / float(T)
-v_b = math.tanh(1.0 - progress)        # Li-inspired, BOUNDED (cf. arctanh)
-v_c = 1.0 - progress                   # Li 2.4 verbatim
+v_b = math.tanh(1.0 - progress)        # inspirado em Li, LIMITADO (cf. arctanh)
+v_c = 1.0 - progress                   # Li 2.4 literal
 
-# Signed rank weights ∈ [-1, +1]:  best walker = +1, worst = −1, median ≈ 0
+# Pesos assinados por ordenação ∈ [-1, +1]: melhor agente = +1, pior = −1, mediana ≈ 0
 denom = float(n - 1)
 weights[i] = (float(n) - 2.0 * float(r) + 1.0) / denom
 
-# Per-edge update — the ZipMould analogue of Li Eq. (2.7)
+# Atualização por aresta — o análogo ZipMould da Eq. (2.7) de Li
 new_val = v_c * tau[s, e] + v_b * deposit[s, e]
 
-# Li z-branch escape — verbatim, on edges
+# Escape por reinício z de Li — literal, nas arestas
 if z > 0.0 and np.random.random() < z:
     new_val = np.random.normal(0.0, tau_max / 4.0)
 ```
 
 <div class="ribbon">
 
-The **signed** rank weight is our discrete analogue of Li's $W$: top-half walkers *deposit* pheromone, bottom-half walkers *evaporate* it on the same edges. Without sign, this collapses to vanilla ACO.
+O peso **assinado** por *ranking* é o análogo discreto do $W$ de Li: *walkers* da metade superior *depositam* feromônio; os da metade inferior o *evaporam* nas mesmas arestas. Sem sinal, o método vira ACO *vanilla*.
 
 </div>
 
 ---
 
-## What changed from Li, and why
+<!-- _class: dense -->
 
-| Li (2020) — continuous | ZipMould — discrete | Why the change |
+## O que mudou em relação a Li, e por quê
+
+| Li (2020) — contínuo | ZipMould — discreto | Por que a mudança |
 |---|---|---|
-| State $\vec{X} \in \mathbb{R}^d$ | Pheromone $\tau \in \mathbb{R}^{m}$ ($m$ = #edges) | No coordinate space; edges carry memory |
-| $W_i = 1 \pm r \log(\cdot)$ | $W_i = (n - 2r + 1)/(n-1)$ | Linear rank — bounded, no $\log$ singularity |
-| $v_b \in [-a, a]$, $a = \mathrm{arctanh}(1-t/T)$ — **unbounded** at $t=0$ | $v_b = \tanh(1 - t/T)$ — bounded in $[0, \tanh 1]$ | Discrete deposits diverge under unbounded $v_b$; saturation stabilises |
-| Three-branch *switching* update (z / approach / oscillate) | **Single** sum $v_c\tau + v_b\Delta$ + z-branch noise | All three Li ingredients per step; no per-individual branch lottery |
-| $X_A - X_B$ random direction | Replaced by **rank-weighted aggregate** $\sum_w W_w \cdot \mathbb{1}[\text{walker } w \text{ used edge } e]$ | "Difference of two random points" undefined on graph |
+| Estado $\vec{X} \in \mathbb{R}^d$ | Feromônio $\tau \in \mathbb{R}^{m}$ ($m$ = #arestas) | Não há espaço de coordenadas; arestas carregam memória |
+| $W_i = 1 \pm r \log(\cdot)$ | $W_i = (n - 2r + 1)/(n-1)$ | *Ranking* linear — limitado, sem singularidade de $\log$ |
+| $v_b \in [-a, a]$, $a = \mathrm{arctanh}(1-t/T)$ — **ilimitado** em $t=0$ | $v_b = \tanh(1 - t/T)$ — limitado em $[0, \tanh 1]$ | Depósitos discretos divergem sob $v_b$ ilimitado; a saturação estabiliza |
+| Atualização com *switching* em três casos (z / *approach* / *oscillate*) | Soma **única** $v_c\tau + v_b\Delta$ + ruído *z-branch* | Todos os ingredientes de Li em cada passo; sem sorteio de *branch* por indivíduo |
+| Direção aleatória $X_A - X_B$ | Substituída por **agregado ponderado por *ranking*** $\sum_w W_w \cdot \mathbb{1}[\text{agente } w \text{ usou aresta } e]$ | "Diferença de dois pontos aleatórios" é indefinida em grafo |
 
-These are not improvements — they are **adaptations** that preserve Li's mechanism (positive/negative feedback + amplitude schedule + restart escape) under the constraints of a discrete edge-pheromone state.
+Não é uma tentativa de "melhorar" Li: são **adaptações** para preservar *feedback* ±, evolução de amplitude e *restart* em um estado discreto de feromônio.
 
 ---
 
-## Ablation matrix
+<!-- _class: dense -->
+
+## Matriz de ablação
 
 <div class="columns-wide-left">
 
 <div>
 
-### Two design knobs
-- **Pheromone mode**:
-  - `unified` — one $\tau$ per edge, shared across the full path
-  - `stratified` — one $\tau$ per (edge, inter-waypoint segment) pair
-- **Sign**:
-  - `signed` — both attract & repel (full SMA analogue)
-  - `positive` — only top half deposits (closer to ACO)
+### Duas escolhas de *design*
+- **Modo de feromônio**:
+  - *unified* — um $\tau$ por aresta no caminho inteiro
+  - *stratified* — um $\tau$ por par (aresta, segmento entre *waypoints*)
+- **Sinal**:
+  - *signed* — atrai e repele (análogo completo da SMA)
+  - *positive* — apenas a metade superior deposita (mais próximo de ACO)
 
 </div>
 
 <div>
 
-### 4 conditions × 4 baselines
+### 4 condições × 4 *baselines*
 
-| | unified | stratified |
+| | *unified* | *stratified* |
 |---|---|---|
-| **signed**   | A | B |
-| **positive** | C | D |
+| ***signed***   | A | B |
+| ***positive*** | C | D |
 
 </div>
 
 </div>
 
-### Pre-registered hypotheses
-1. **signed** > **positive** on hard puzzles (negative feedback breaks symmetry)
-2. **stratified** > **unified** when $K$ is large (per-segment memory matters)
-3. ZipMould (any) > vanilla ACO baseline on the held-out test split
+### Hipóteses pré-registradas
+1. ***signed*** > ***positive*** em *puzzles* difíceis (*feedback* negativo quebra simetria)
+2. ***stratified*** > ***unified*** quando $K$ é grande (memória por segmento importa)
+3. ZipMould > *baseline* ACO *vanilla* no *split* de teste *held-out*
 
-<p class="citation">Tested via paired McNemar with FDR correction across 4 conditions × 4 baselines × seeds.</p>
+<p class="citation">Teste pareado de McNemar com correção FDR nas 4 condições × 4 <em>baselines</em> × <em>seeds</em>.</p>
 
 ---
 
-## The Numba kernel — why this runs
+## O *kernel* Numba — por que é rápido
 
 ```python
 @nb.njit(cache=True)
 def _walker_step(walker_id, pos, visited, ..., tau, alpha, beta_log, ...):
-    for d in range(4):                                  # 4 neighbours
+    for d in range(4):                                  # 4 vizinhos
         nb_cell = adjacency[cur, d]
         if nb_cell < 0 or _bit_test(visited, walker_id, nb_cell): continue
         h_a = h_articulation(walker_id, nb_cell, visited, adjacency, ...)
-        if h_a == NEG_INF: continue                     # disconnects subgraph
+        if h_a == NEG_INF: continue                     # desconecta subgrafo
         logits[d] = alpha * tau_val + beta_log * math.log(eta)
-    # softmax with log-sum-exp; roulette sample; set visited bit; update parity
+    # normaliza em escala log; amostra roleta; marca visita; atualiza paridade
 ```
 
-- **Bitset `visited`** (uint64 words) → O(1) membership, cache-friendly.
-- `@njit` JIT-compiles the hot loop to **C-speed**; pure-Python is ≈100× slower.
-- Articulation flood-fill is the heaviest inner cost — `work_stack` shared across walkers.
+- <strong><em>Bitset</em> <code>visited</code></strong> (palavras uint64) → consulta O(1), *cache-friendly*.
+- `@njit` compila o *hot loop* via JIT para **velocidade de C**; Python puro é ≈100× mais lento.
+- O *flood-fill* de *articulation* é o maior custo interno — `work_stack` compartilhado entre *walkers*.
 
 ---
 
-## Baselines + statistical protocol
+## *Baselines* + protocolo estatístico
 
-| Baseline | Pheromone | Deposit | Notes |
+| *Baseline* | Feromônio | Depósito | Observações |
 |---|---|---|---|
-| **aco-vanilla**     | unsigned, unified | $\propto$ fitness | Classical $\rho$-evaporation, no restart noise |
-| **heuristic-only**  | none              | —                  | Greedy on $\eta$ alone — measures heuristic strength |
-| **random-walk**     | uniform           | none               | Pure exploration floor |
-| **backtracking**    | n/a               | n/a                | Exhaustive DFS with parity + articulation pruning |
+| ***aco-vanilla***     | *unsigned*, *unified* | $\propto$ *fitness* | Evaporação $\rho$ clássica, sem ruído de *restart* |
+| ***heuristic-only***  | *none*              | —                  | *Greedy* apenas em $\eta$ — mede a força das heurísticas |
+| ***random-walk***     | *uniform*           | *none*               | Piso de exploração pura |
+| ***backtracking***    | n/a               | n/a                | DFS exaustivo com poda por paridade + *articulation* |
 
-### Pre-registered protocol
-- **Train / dev / test** splits, stratified by puzzle hardness (computed offline from BFS depth + $K/L$).
-- **Held-out test set**: results computed *once*, after design freeze.
-- **McNemar paired test** on solve / no-solve outcomes per puzzle.
-- **Benjamini-Hochberg FDR correction** across the 4×4 condition matrix.
-- All seeds reproducible via `derive_kernel_seed(global_seed, run_seed, puzzle_id, config_hash)`.
+### Protocolo pré-registrado
+- *Splits* <strong><em>train</em> / <em>dev</em> / <em>test</em></strong>, estratificados por dificuldade do *puzzle* (calculada *offline* por profundidade BFS + $K/L$).
+- ***Held-out test set***: resultados computados *uma única vez*, depois do congelamento do *design*.
+- **Teste pareado de McNemar** sobre sucesso / fracasso em cada *puzzle*.
+- **Correção FDR Benjamini-Hochberg** na matriz 4×4 de condições.
+- Todas as *seeds* são reprodutíveis via `derive_kernel_seed(global_seed, run_seed, puzzle_id, config_hash)`.
 
 ---
 
-## Visualiser — how the trace becomes a movie
+## Visualizador — como o *trace* vira animação
 
 <div class="columns-wide-left">
 
 <div>
 
 ```text
-zipmould solver
+resolvedor zipmould
     │
     ▼
-CBOR trace (per-frame snapshot)
+registro CBOR (um estado por quadro)
     • t, v_b, v_c
-    • walker positions + segments
-    • tau delta (sparse)
-    • best fitness so far
+    • posições dos agentes + segmentos
+    • delta de tau (esparso)
+    • melhor avaliação até o momento
     │
     ▼
-FastAPI server (uv run zipmould viz serve)
-    │  HTTP + cbor-x stream
+servidor FastAPI (uv run zipmould viz serve)
+    │  fluxo HTTP + cbor-x
     ▼
 Vue 3 + Pinia + Tailwind 4
     • GridCanvas (SVG)
     • FitnessChart (Chart.js)
     • WalkerTable
-    • Frame scrubber
+    • controle de quadros
 ```
 
 </div>
 
 <div>
 
-### Why CBOR
-- **Sparse** $\tau$-deltas only — frames stay small even on 200-iter runs.
-- Schema-light, **streamable**, native binary in `cbor-x`.
+### Por que CBOR
+- Só $\tau$-*deltas* **esparsos** — os *frames* continuam pequenos mesmo com 200 iterações.
+- Pouco *schema*, ***streamable***, binário nativo em `cbor-x`.
 
-### Why client-side replay
-- Solver is heavy; we run it **once** to disk, then scrub instantly in the browser.
-- Decouples experiment runs from presentation/inspection.
+### Por que *replay client-side*
+- O *solver* é pesado; rodamos **uma vez** para disco e depois navegamos no *browser* sem espera.
+- Separa as execuções experimentais da apresentação e da inspeção.
 
 </div>
 
@@ -616,46 +650,48 @@ Vue 3 + Pinia + Tailwind 4
 
 <!-- _class: lead -->
 
-# Live demo
+# *Demo* ao vivo
 
-## *Switching to the visualiser…*
+## *Indo para o visualizador…*
 
 ```bash
-# Terminal 1 — solver/HTTP backend
+# Terminal 1 — servidor HTTP do resolvedor
 uv run zipmould viz serve
 
-# Terminal 2 — Vue dev server
+# Terminal 2 — servidor de desenvolvimento Vue
 cd viz-web && bun run dev
 ```
 
-What we'll show: load a trace · play it back · toggle τ heatmap and walker layers · scrub to a specific iteration · compare *signed* vs *positive* conditions on the same puzzle.
+O que vamos mostrar: carregar um *trace* · reproduzir a animação · ligar/desligar *heatmap* de τ e camadas de *walkers* · ir até uma iteração específica · comparar *signed* vs *positive* no mesmo *puzzle*.
 
 ---
 
-## Takeaways + future work
+<!-- _class: dense -->
+
+## Conclusões + trabalhos futuros
 
 <div class="columns">
 
 <div>
 
-### Takeaways
-- Li's SMA is a **mechanism**, not a code path: $W$ + $v_b/v_c$ + $z$-branch each have a discrete analogue.
-- Stigmergy (ACO) supplies the missing state space; SMA supplies the **dynamics on top of it**.
-- Bounding the $v_b$ schedule is the **single largest deviation** — and forced by discreteness.
-- Pre-registered ablation matrix lets us attribute any win to mechanism, not tuning.
+### Conclusões
+- A SMA de Li é um **mecanismo**, não um caminho de código: $W$, $v_b/v_c$ e *z-branch* têm análogos discretos.
+- *Stigmergy* (ACO) fornece o espaço de estados; SMA fornece a **dinâmica que atua sobre ele**.
+- Limitar a evolução de $v_b$ é o **maior desvio** — e foi imposto pela discretização.
+- A matriz de ablação pré-registrada separa ganho de mecanismo de ganho por *tuning*.
 
 </div>
 
 <div>
 
-### Future work
-- **Warm-start** from the heuristic-only baseline path.
-- **Learned heuristic** $\eta$ (small MLP on local cell features) — drop in beside Manhattan/Warnsdorff/etc.
-- **Multi-objective**: shortest path under a tight wall budget.
-- **Beyond Zip**: knight's tours, generalised Hamiltonian-path-with-pinned-vertices.
+### Trabalhos futuros
+- ***Warm-start*** com a *baseline* *heuristic-only*.
+- ***Learned heuristic*** $\eta$: MLP local junto a Manhattan/Warnsdorff/etc.
+- ***Multi-objective***: caminho curto sob orçamento de paredes.
+- **Além do Zip**: *knight's tours* e *Hamiltonian-path-with-pinned-vertices*.
 
-### Thanks
-Questions, sceptical or otherwise, welcomed.
+### Obrigado
+Perguntas são bem-vindas — especialmente as céticas.
 
 </div>
 
@@ -663,11 +699,11 @@ Questions, sceptical or otherwise, welcomed.
 
 ---
 
-## References
+## Referências
 
-- **Li, S., Chen, H., Wang, M., Heidari, A. A. & Mirjalili, S.** (2020). Slime mould algorithm: A new method for stochastic optimization. *Future Generation Computer Systems* 111, 300–323.
+- **Li, S., Chen, H., Wang, M., Heidari, A. A. & Mirjalili, S.** (2020). *Slime mould algorithm: A new method for stochastic optimization*. *Future Generation Computer Systems* 111, 300–323.
 - **Dorigo, M. & Stützle, T.** (2004). *Ant Colony Optimization*. MIT Press.
-- **Mirjalili, S. & Lewis, A.** (2016). The Whale Optimization Algorithm. *Advances in Engineering Software* 95, 51–67.
-- **Tero, A. et al.** (2010). Rules for Biologically Inspired Adaptive Network Design. *Science* 327, 439–442.
+- **Mirjalili, S. & Lewis, A.** (2016). *The Whale Optimization Algorithm*. *Advances in Engineering Software* 95, 51–67.
+- **Tero, A. et al.** (2010). *Rules for Biologically Inspired Adaptive Network Design*. *Science* 327, 439–442.
 - **Warnsdorff, H. C.** (1823). *Des Rösselsprungs einfachste und allgemeinste Lösung*.
-- **McNemar, Q.** (1947). Note on the sampling error of the difference between correlated proportions or percentages. *Psychometrika* 12, 153–157.
+- **McNemar, Q.** (1947). *Note on the sampling error of the difference between correlated proportions or percentages*. *Psychometrika* 12, 153–157.
