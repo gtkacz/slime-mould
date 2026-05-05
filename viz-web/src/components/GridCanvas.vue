@@ -274,7 +274,7 @@ import { useTraceStore } from '../stores/trace'
 import { usePlaybackStore } from '../stores/playback'
 import { useRunStore } from '../stores/run'
 import { useTraceReplay } from '../composables/useTraceReplay'
-import type { TraceHeader, TraceWall, WalkerSnapshot, WalkerStatus } from '../api/types'
+import type { Frame, Trace, TraceHeader, TraceWall, WalkerSnapshot, WalkerStatus } from '../api/types'
 
 const traceStore = useTraceStore()
 const playback = usePlaybackStore()
@@ -356,7 +356,7 @@ const baseCells = computed(() => {
 })
 
 const tauBounds = computed(() => {
-  const max = replay.tauAbsMax.value
+  const max = traceCellPheromoneAbsMax.value
   return { min: -max, max }
 })
 
@@ -392,12 +392,33 @@ function pheromoneColor(t: number): string {
   return `hsl(${hue} 88% ${lightness}%)`
 }
 
-const cellPheromones = computed<number[]>(() => {
-  const t = trace.value
-  if (!t) return []
+function tauLength(trace: Trace): number {
+  const stripes = trace.frames.some((f) => f.tau_delta.mode === 'stratified')
+    ? Math.max(2, trace.header.K)
+    : 1
+  return stripes * 2 * trace.header.L
+}
+
+function tauFlatIndex(
+  edgeId: number,
+  stripe: number,
+  halfL: number,
+  mode: 'unified' | 'stratified',
+): number {
+  const s = mode === 'unified' || stripe < 0 ? 0 : stripe
+  return s * halfL + edgeId
+}
+
+function applyTauDelta(buf: Float32Array, frame: Frame, halfL: number): void {
+  for (const [edgeId, stripe, delta] of frame.tau_delta.edges) {
+    const idx = tauFlatIndex(edgeId, stripe, halfL, frame.tau_delta.mode)
+    buf[idx] = (buf[idx] ?? 0) + delta
+  }
+}
+
+function cellPheromoneValues(t: Trace, tau: Float32Array): number[] {
   const N = t.header.N
   const cellCount = N * N
-  const tau = replay.tau.value
   const directedEdges = 2 * t.header.L
   // Without an exposed edge_of layout we approximate per-cell intensity by
   // averaging directed-edge slots that fold into each cell via modulo. This
@@ -417,6 +438,27 @@ const cellPheromones = computed<number[]>(() => {
     out[c] = avg
   }
   return out
+}
+
+const traceCellPheromoneAbsMax = computed(() => {
+  const t = trace.value
+  if (!t) return 0
+  const tau = new Float32Array(tauLength(t))
+  const halfL = 2 * t.header.L
+  let max = 0
+  for (const frame of t.frames) {
+    applyTauDelta(tau, frame, halfL)
+    for (const value of cellPheromoneValues(t, tau)) {
+      max = Math.max(max, Math.abs(value))
+    }
+  }
+  return max
+})
+
+const cellPheromones = computed<number[]>(() => {
+  const t = trace.value
+  if (!t) return []
+  return cellPheromoneValues(t, replay.tau.value)
 })
 
 const cells = computed<string[]>(() => {

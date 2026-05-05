@@ -405,12 +405,24 @@ describe('GridCanvas', () => {
       frames: [
         {
           ...tinyTrace.frames[0]!,
-          tau_delta: { mode: 'unified', edges: [[0, -1, 1]] },
+          tau_delta: {
+            mode: 'unified',
+            edges: [
+              [0, -1, 1],
+              [4, -1, 1],
+            ],
+          },
         },
         {
           ...tinyTrace.frames[0]!,
           t: 1,
-          tau_delta: { mode: 'unified', edges: [[0, -1, -4]] },
+          tau_delta: {
+            mode: 'unified',
+            edges: [
+              [0, -1, -4],
+              [4, -1, -4],
+            ],
+          },
         },
       ],
     })
