@@ -287,20 +287,20 @@ const advancedParams = [
   {
     key: 'population',
     name: 'population',
-    symbol: 'n',
-    description: 'Number of walkers sampled in each iteration.',
+    symbol: 'N',
+    description: 'Number of walkers sampled in each iteration; larger N improves exploration at proportional compute cost.',
   },
   {
     key: 'tau_max',
     name: 'maximum pheromone',
     symbol: '&tau;<sub>max</sub>',
-    description: 'Upper bound used when clamping pheromone values.',
+    description: 'Upper bound when clamping pheromones; also scales the ζ-branch Gaussian noise (σ = τ_max / 4).',
   },
   {
     key: 'z',
     name: 'zeta',
     symbol: '&zeta;',
-    description: 'Exploration pressure parameter for stochastic path selection.',
+    description: 'Probability of triggering the ζ-branch — a stochastic perturbation that injects Gaussian noise into pheromones to escape local optima.',
   },
 ] as const
 

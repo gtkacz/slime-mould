@@ -47,6 +47,17 @@ describe('useTraceReplay', () => {
     expect(replay.tau.value[0]).toBeCloseTo(0.4)
   })
 
+  it('tracks the largest absolute accumulated pheromone across every frame', () => {
+    const trace = makeTrace(2, 'unified', [
+      [[0, -1, 0.5]],
+      [[0, -1, -2.25]],
+      [[0, -1, 0.25]],
+    ])
+    const replay = useTraceReplay(ref(trace), ref(0))
+
+    expect(replay.tauAbsMax.value).toBeCloseTo(1.75)
+  })
+
   it('seeking forward and back gives the same field as forward replay', () => {
     const deltas: [number, number, number][][] = []
     for (let i = 0; i < 200; i++) {

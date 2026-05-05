@@ -356,10 +356,8 @@ const baseCells = computed(() => {
 })
 
 const tauBounds = computed(() => {
-  const cfg = trace.value?.config as { tau_max?: number; tau_signed?: boolean } | undefined
-  const max = cfg?.tau_max ?? 10
-  const min = cfg?.tau_signed ? -max : 0
-  return { min, max }
+  const max = replay.tauAbsMax.value
+  return { min: -max, max }
 })
 
 const cellCenterX = (cell: [number, number]) => (cell[1] + 0.5) * cellSize.value
@@ -423,6 +421,7 @@ const cellPheromones = computed<number[]>(() => {
 
 const cells = computed<string[]>(() => {
   const { min: tauMin, max: tauMax } = tauBounds.value
+  if (tauMin === tauMax) return cellPheromones.value.map(() => pheromoneColor(0.5))
   const span = Math.max(1e-9, tauMax - tauMin)
   return cellPheromones.value.map((value) => pheromoneColor((value - tauMin) / span))
 })

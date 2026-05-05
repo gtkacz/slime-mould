@@ -394,8 +394,34 @@ describe('GridCanvas', () => {
       'hsl(156 88% 58%)',
     ])
     expect(legend.text()).toContain('pheromone')
-    expect(legend.text()).toContain('-10')
-    expect(legend.text()).toContain('10')
+    expect(legend.text()).toContain('0')
+  })
+
+  it('uses a symmetric pheromone legend from the largest absolute value in the trace', async () => {
+    const traceStore = useTraceStore()
+    const playback = usePlaybackStore()
+    traceStore.set('id', {
+      ...tinyTrace,
+      frames: [
+        {
+          ...tinyTrace.frames[0]!,
+          tau_delta: { mode: 'unified', edges: [[0, -1, 1]] },
+        },
+        {
+          ...tinyTrace.frames[0]!,
+          t: 1,
+          tau_delta: { mode: 'unified', edges: [[0, -1, -4]] },
+        },
+      ],
+    })
+    playback.setTotal(2)
+
+    const wrapper = mount(GridCanvas)
+    await wrapper.vm.$nextTick()
+
+    const legend = wrapper.find('[data-layer="pheromone-legend"]')
+    expect(legend.text()).toContain('-3')
+    expect(legend.text()).toContain('3')
   })
 
   it('renders a walker color legend for status colors', async () => {

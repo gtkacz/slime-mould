@@ -26,6 +26,14 @@ function applyDelta(buf: Float32Array, frame: Frame, halfL: number): void {
   }
 }
 
+function maxAbs(buf: Float32Array): number {
+  let max = 0
+  for (const value of buf) {
+    max = Math.max(max, Math.abs(value))
+  }
+  return max
+}
+
 export function useTraceReplay(
   trace: Ref<Trace | null>,
   index: Ref<number>,
@@ -34,6 +42,7 @@ export function useTraceReplay(
   const interval = opts.checkpointInterval ?? DEFAULT_CHECKPOINT_INTERVAL
   const checkpoints = ref<Float32Array[]>([])
   const tau = ref<Float32Array>(new Float32Array(0))
+  const tauAbsMax = ref(0)
   const lastIndex = ref(-1)
 
   function rebuildCheckpoints(t: Trace): void {
@@ -41,12 +50,15 @@ export function useTraceReplay(
     const halfL = 2 * t.header.L
     const cps: Float32Array[] = []
     const buf = new Float32Array(length)
+    let absMax = 0
     cps.push(new Float32Array(buf))
     for (let i = 0; i < t.frames.length; i++) {
       applyDelta(buf, t.frames[i]!, halfL)
+      absMax = Math.max(absMax, maxAbs(buf))
       if ((i + 1) % interval === 0) cps.push(new Float32Array(buf))
     }
     checkpoints.value = cps
+    tauAbsMax.value = absMax
   }
 
   function seek(t: Trace, target: number): void {
@@ -79,6 +91,7 @@ export function useTraceReplay(
       if (!t) {
         checkpoints.value = []
         tau.value = new Float32Array(0)
+        tauAbsMax.value = 0
         lastIndex.value = -1
         return
       }
@@ -110,5 +123,5 @@ export function useTraceReplay(
   const walkers = computed(() => frame.value?.walkers ?? [])
   const bestPath = computed(() => frame.value?.best.path ?? [])
 
-  return { tau, frame, walkers, bestPath }
+  return { tau, tauAbsMax, frame, walkers, bestPath }
 }
