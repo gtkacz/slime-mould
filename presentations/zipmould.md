@@ -333,7 +333,7 @@ RETURN bF, X_b
 ```
 
 - Um *loop* externo, três casos internos, sem derivadas e sem gradientes.
-- Cinco hiperparâmetros no total: população $n$, iterações $T$, probabilidade de reinício $z$ e as constantes $v_b, v_c$.
+- Três hiperparâmetros: população $n$, iterações $T$, probabilidade de reinício $z$. Os valores de $v_b, v_c$ são derivados, não ajustados.
 
 ---
 
@@ -347,8 +347,8 @@ RETURN bF, X_b
 
 ### Caso empírico
 - Em **23 *benchmarks* clássicos** (unimodais + multimodais) o SMA vence ou empata em primeiro na maioria.
-- Supera **ACO, PSO, e outros algoritmos de enxame** na maior parte dos casos multimodais.
-- **4 problemas de projeto de engenharia** (viga soldada, vaso de pressão, *cantilever*, *I-beam*): melhor solução viável nos quatro.
+- Supera **PSO, GWO, MFO, WOA, DE** e outros candidatos do estudo na maior parte dos casos multimodais.
+- **4 problemas de projeto de engenharia** (viga soldada, vaso de pressão, *cantilever*, *I-beam*): melhor solução viável nos quatro — vence inclusive o ACO na viga soldada (Tabela 20).
 - As curvas de convergência mostram **queda inicial rápida + refinamento final preciso**.
 
 </div>
@@ -482,16 +482,19 @@ weights[i] = (float(n) - 2.0 * float(r) + 1.0) / denom
 # Atualização por aresta, análogo da Eq. (2.7) de Li
 new_val = v_c * tau[s, e] + v_b * deposit[s, e]
 
-# Escape por reinício z de Li literal, nas arestas
+# z-branch ANÁLOGA (não literal): aplicada ao FEROMÔNIO,
+# não à posição do agente como em Li
 if z > 0.0 and np.random.random() < z:
     new_val = np.random.normal(0.0, tau_max / 4.0)
 ```
 
 <div class="ribbon">
 
-O peso **assinado** por *ranking* é o análogo discreto do $W$ de Li: *walkers* da metade superior *depositam* feromônio; os da metade inferior o *evaporam* nas mesmas arestas. Sem sinal, o método vira ACO puro.
+O peso **assinado** por *ranking* é o análogo discreto do $W$ de Li: *walkers* da metade superior *depositam* feromônio; os da metade inferior o *evaporam* nas mesmas arestas.
 
 </div>
+<!-- 
+<p class="citation">ZipMould adota $z = 0.05$ por <em>default</em> (<code>config.py</code>); Li recomenda $z = 0.03$ a partir do <em>sweep</em> §3.4 sobre $F_1$–$F_{13}$ contínuos. A diferença é uma escolha experimental para o domínio discreto, não uma transcrição.</p> -->
 
 ---
 
@@ -503,7 +506,7 @@ O peso **assinado** por *ranking* é o análogo discreto do $W$ de Li: *walkers*
 |---|---|---|
 | Estado $\vec{X} \in \mathbb{R}^d$ | Feromônio $\tau \in \mathbb{R}^{m}$ ($m$ = $#arestas$) | Não há espaço de coordenadas; arestas carregam memória |
 | $W_i = 1 \pm r \log(\cdot)$ | $W_i = \frac{n - 2r + 1}{n-1}$ | *Ranking* linear é limitado, sem singularidade de $\log$ |
-| $v_b \in [-a, a]$, $a = \mathrm{arctanh}(\frac{1-t}{T})$ é **ilimitado** em $t=0$ | $v_b = \tanh(1 - \frac{t}{T})$ é limitado em $[0, \tanh 1]$ | Depósitos discretos divergem sob $v_b$ ilimitado; a saturação estabiliza |
+| $v_b \sim \mathcal{U}(-a,a)$ **por agente** ($a = \mathrm{arctanh}(\frac{1-t}{T})$): oscilador **estocástico**, ilimitado em $t=0$ | $v_b = \tanh(1 - \frac{t}{T})$: escalar **determinístico** por iteração, em $[0, \tanh 1]$ | Saturação estabiliza depósitos discretos; a perda da oscilação estocástica de $v_b$ é compensada pela amostragem *softmax* dos *walkers* |
 | Atualização com *switching* em três casos (z / *approach* / *oscillate*) | Soma **única** $v_c\tau + v_b\Delta$ + ruído *z-branch* | Todos os ingredientes de Li em cada passo; sem sorteio de *branch* por indivíduo |
 | Direção aleatória $X_A - X_B$ | Substituída por **agregado ponderado por *ranking*** $\sum_w W_w \cdot \mathbb{1}[\text{agente } w \text{ usou aresta } e]$ | "Diferença de dois pontos aleatórios" é indefinida em grafo |
 
