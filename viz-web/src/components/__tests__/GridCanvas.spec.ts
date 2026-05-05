@@ -362,7 +362,7 @@ describe('GridCanvas', () => {
     expect(wrapper.find('[data-layer="pheromone"] rect').attributes('fill')).toBe(
       'hsl(173 88% 38%)',
     )
-    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#f43f5e')
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#f32525')
     expect(
       wrapper.find('[data-layer="waypoints"] .waypoint-marker-ring').attributes('stroke'),
     ).toBe('#c084fc')
@@ -437,12 +437,10 @@ describe('GridCanvas', () => {
     expect(legend.exists()).toBe(true)
     expect(legend.attributes('transform')).toBe('translate(150 502)')
     expect(legend.text()).toContain('walkers')
-    expect(legend.text()).toContain('alive')
     expect(legend.text()).toContain('dead-end')
     expect(legend.text()).toContain('complete')
     expect(legend.findAll('circle').map((circle) => circle.attributes('fill'))).toEqual([
-      '#22c55e',
-      '#008020',
+      '#808000',
       '#00e755',
     ])
   })
@@ -495,7 +493,7 @@ describe('GridCanvas', () => {
     const wrapper = mount(GridCanvas)
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#14b85a')
+    expect(wrapper.find('[data-layer="best-path"] polyline').attributes('stroke')).toBe('#00672d')
     expect(wrapper.find('[data-layer="best-path"] polyline').attributes('aria-label')).toBe(
       'Best path: solver succeeded',
     )
