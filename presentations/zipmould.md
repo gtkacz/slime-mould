@@ -281,7 +281,7 @@ A *z-branch* permite que o SMA escape de ótimos locais sem influência externa 
 <div>
 
 ### $v_b$: amplitude saturante
-$$v_b \in [-a, a], \quad a = \mathrm{arctanh}(1 - t/T)$$
+$$v_b \in [-a, a], \quad a = \mathrm{arctanh}(1 - \frac{t}{T})$$
 
 No início: $a \to \infty$, causando saltos grandes. No fim: $a \to 0$ resultando em exploração local mais fina.
 
@@ -333,38 +333,7 @@ RETURN bF, X_b
 ```
 
 - Um *loop* externo, três casos internos, sem derivadas e sem gradientes.
-- Três hiperparâmetros: população $n$, iterações $T$, probabilidade de reinício $z$. Os valores de $v_b, v_c$ são derivados, não ajustados.
-
----
-
-<!-- _class: dense -->
-
-## Por que o algoritmo ficou popular?
-
-<div class="columns">
-
-<div>
-
-### Caso empírico
-- Em **23 *benchmarks* clássicos** (unimodais + multimodais) o SMA vence ou empata em primeiro na maioria.
-- Supera **PSO, GWO, MFO, WOA, DE** e outros candidatos do estudo na maior parte dos casos multimodais.
-- **4 problemas de projeto de engenharia** (viga soldada, vaso de pressão, *cantilever*, *I-beam*): melhor solução viável nos quatro — vence inclusive o ACO na viga soldada (Tabela 20).
-- As curvas de convergência mostram **queda inicial rápida + refinamento final preciso**.
-
-</div>
-
-<div>
-
-### Por que funciona bem?
-- $W$ implementa um **termo de diversidade** explícito, logo a repulsão da metade inferior evita convergência prematura.
-- A evolução de $v_b$ cria uma transição automática <strong><em>exploration</em>→<em>exploitation</em></strong>, sem influência externa.
-- A fuga via *z-branch* é **simples, mas efetiva** para sair de limites locais.
-
-</div>
-
-</div>
-
-<p class="citation">Li et al. (2020), Tabelas 5–22; Figuras 9–14 (curvas de convergência).</p>
+- Três hiperparâmetros: população $n$, iterações $T$, probabilidade de reinício $z$. Os valores de $v_b, v_c$ são derivados.
 
 ---
 
@@ -397,7 +366,7 @@ O problema de decisão é **NP-completo**, mas é resolvível em prática para $
 
 ---
 
-## Por que não dá para aplicar o SMA contínuo diretamente
+## Por que não aplicar o SMA contínuo diretamente?
 
 <div class="columns">
 
@@ -442,7 +411,7 @@ Entrada (grade + K pontos) -> Checagem prévia O(N²) -> Código Python popuala�
 - **Limite de paridade**: $|F_0 - F_1| \leq 1$ na coloração de tabuleiro
 - **Paridade dos extremos** consistente com $w_1, w_K$
 
-Se qualquer um desses falha, o *puzzle* não é resolvível e o *kernel* nem roda.
+Se qualquer um desses falha, o *puzzle* não é resolvível e o *solver* nem roda.
 
 ---
 
@@ -490,7 +459,7 @@ if z > 0.0 and np.random.random() < z:
 
 <div class="ribbon">
 
-O peso **assinado** por *ranking* é o análogo discreto do $W$ de Li: *walkers* da metade superior *depositam* feromônio; os da metade inferior o *evaporam* nas mesmas arestas.
+O peso **assinado** por *ranking* é o análogo discreto do $W$ de Li: *walkers* da metade superior *depositam* feromônio; os da metade inferior *evaporam* nas mesmas arestas.
 
 </div>
 <!-- 
